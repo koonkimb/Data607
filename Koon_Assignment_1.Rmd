@@ -1,0 +1,55 @@
+---
+title: "Data 607 Assignment 1"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+```
+
+### Overview / Introduction
+
+For my article, I chose "The Economic Guide to Picking a College Major", found here: https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/.  The article discusses median salaries for various college degrees, highlighting the lucrative nature of engineering majors.  It also challenges the assumption that all STEM majors have high expected salaries, and also suggests that students do not take into account expected salary when choosing a major.  
+
+```{r load-data}
+majors <- read.csv("/users/kim/documents/data 607/all-ages.csv", header = TRUE, sep = ",")
+```
+
+
+```{r create data subset}
+names(majors)
+majors_new <- subset(majors, select = -c(Major_code,Employed_full_time_year_round,Unemployment_rate,P25th,P75th))
+names(majors_new)
+majors_new <- majors_new %>% 
+  rename(
+    College_Major = Major,
+    Sample_Size = Total,
+    Median_Salary = Median
+    )
+names(majors_new)
+```
+
+## Engineering Median Salary Breakdown
+
+```{r Majors_Categories and Unemployment}
+majors_new %>% distinct(Major_category)
+majors_new_engineering <- majors_new %>% filter(Major_category == "Engineering")
+
+ggplot(majors_new_engineering,aes(y = fct_reorder(College_Major, Median_Salary), x = Median_Salary)) + geom_col() + labs(
+  title = "Median Engineering Salaries (2014)",
+  y = "Engineering College Major", x = "Median Salary")
+
+
+```
+
+## Conclusion
+
+Given the vastly different job market between 2014 and current day (2024), I would update the findings by polling again for more recent Median Salaries.  Furthermore, I believe the data should be collected on location as well, given that cost of living should be factored in to many of these jobs.  It's possible that certain industries are centered in high cost of living areas, which may further influence the median salary. It would also be interesting to see a comparison between the 2014 data and present day data, as we could visualize how the median salaries may have shifted, or even stagnated despite inflation.  
+
