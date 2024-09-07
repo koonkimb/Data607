@@ -196,11 +196,11 @@ PopularMoviesSummary
 PopularMovies %>% 
   group_by(Movie) %>% 
   summarise(averageRatings = mean(Rating, na.rm = TRUE)) %>%
-  ggplot(aes( y = averageRatings, x = reorder(Movie,-averageRatings)),na.rm = TRUE) + 
+  ggplot(aes( x = averageRatings, y = reorder(Movie,-averageRatings)),na.rm = TRUE) + 
   geom_col() + geom_text(aes(label = round(averageRatings,1)),
                          position = position_dodge(width = 1),
-                         vjust = -0.5, size = 5) + 
+                         hjust = -.1, size = 3) + 
   labs(title = "Average Movie Ratings among Respondents on a 5 Point Scale",
-  y = "Average Rating", x = "Movie")
+  x = "Average Rating", y = "Movie")
 ```
 
