@@ -1,0 +1,144 @@
+---
+title: "Data 607 Assignment 3"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+```
+
+### Overview / Introduction
+
+This week we reviewed regular expressions, which are useful for string manipulation and identifying patterns within strings.  Since understanding strings is foundational to understanding regular expressions, we also touched upon useful string functions in this assignment.  
+
+
+## Question 1
+Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+```{r load-and-filter-data}
+majors <- read.csv("C:\\Users\\Kim\\Documents\\Data607\\all-ages.csv", header = TRUE, sep = ",")
+DATAMAJORS <- majors %>% filter(str_detect(Major,"DATA") | str_detect(Major,"STATISTICS"))
+DATAMAJORS  
+
+```
+
+## Question 2
+My interpretation of this question is that the list is printing like 
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"
+
+as shown by
+
+```{r before-format}
+print(c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry"))
+```
+However, it is instead preferable to print
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+like the following
+```{r after-format}
+writeLines('c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")')
+```
+
+## Question 3
+
+Describe, in words, what these expressions will match:
+
+(.)\1\1
+
+The (.)\1\1 regular expression will look for any character (as determined by the "(.)" portion of the expression) followed by two literal \001 ASCII characters. In RStudio, this renders like the following:
+```{r box}
+writeLines("\1")
+```
+
+While other characters may render in the same way, it is important to note that the rendering does not change the way R will search for the character.  Not all improperly rendered characters will be viewed the same way by R.  For example, \002 will be rendered in the same manner, but it will not match with \001.
+
+
+```{r regexp1}
+x <- c("a\1\1","b\1\1","\1\1c","d\2\2")
+writeLines(x)
+str_view(x,"(.)\1\1")
+```
+
+"(.)(.)\\2\\1"
+
+The "(.)(.)\\2\\1" regular expression includes quotes in this case.  Since \\2 and \\1 are properly escaped, this will match with any two characters, followed by one of the second characters, followed by one of the first character, bounded in quotes.
+
+```{r regexp2}
+x <- c('"aaaa"','"abba"',"aaaa","abba")
+writeLines(x)
+str_view(x,'"(.)(.)\\2\\1"')
+```
+
+(..)\1
+
+The (..)\1 regular expression will match with any two characters followed by the ASCII \001 character.
+
+```{r regexp3}
+x <- c("a\1\1","za\1","\1\1\1","\2\2\2")
+writeLines(x)
+str_view(x,"(..)\1")
+```
+
+"(.).\\1.\\1"
+
+The "(.).\\1.\\1" regular expression will match with any two characters, followed by a repeat of the first character, followed by any character, followed by a repeat of the first character again.  Again, it all has to be bounded by quotes since quotes were included in the regular expression.
+
+```{r regexp4}
+x <- c('"abaxa"','"\1\2\1x\1"',"abaxa")
+writeLines(x)
+str_view(x,'"(.).\\1.\\1"')
+```
+
+"(.)(.)(.).*\\3\\2\\1"
+
+The "(.)(.)(.).*\\3\\2\\1" regular expression will match any four characters, then the 3rd character, 2nd character, and 1st character, all bounded in quotes.  
+
+```{r regexp5}
+x <- c('"abcxcba"','"abcccba"','abcdcba')
+writeLines(x)
+str_view(x,'"(.)(.)(.).\\3\\2\\1"')
+```
+
+## Question 4
+Construct regular expressions that match words that:
+
+Start and end with the same character.
+```{r regexp6}
+x <- c("example","ee",'"anything in quotes should work"','"unless I put a different char at the end"!')
+writeLines(x)
+str_view(x,"^(.).*\\1$")
+```
+
+Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+```{r regexp7}
+x <- c("church","abxyxyab","no","abobo")
+writeLines(x)
+str_view(x,"(..).*\\1")
+```
+
+Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
+```{r regexp8}
+x <- c("church","abxyxyaba","no","eleven","elevene","elevn")
+writeLines(x)
+str_view(x,"(.).*\\1.*\\1")
+```
+
+
+## Conclusion
+
+Learning about these functions has opened a door for better "querying" in R, where we can use functions like str_detect to act analogous to "like" clauses in SQL. The regular expressions act similarly to this as well when matching patterns in strings, except provide even more utility as the actual characters in the regular expression can be further "wildcarded" to identify patterns.
