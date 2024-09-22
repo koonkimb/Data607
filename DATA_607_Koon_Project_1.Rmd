@@ -1,0 +1,134 @@
+---
+title: "Data 607 Project 1"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+```
+
+### Overview / Introduction
+
+For this project, we have received a textfile with chess tournament results in an unusual format. The purpose of this project is to create an R markdown file that generates a CSV file with Player Name, Player State, Total Number of Points, Player's Pre-Rating, and Average Pre Chess Rating of Opponents.  
+
+The structure of the file essentially varies by row number, with the first row being a "divider" row with no information (e.g. ------).  Information is found on both the 2nd and 3rd row (or, in other words, row number mod 2 = 0 or row number mod 3 = 0).  The 2nd row contains the player's tournament number ID, name, total points, and performance against specified opponents over a maximum of 7 rounds.  The 3rd row contains the player's state, USCF ID,pre-tournament rating, post-tournament rating, norm performance level achieved at the tournament, and whether they started White or Black against an opponent (whose tournament ID number was specified in the previous row).
+
+Only certain information from the table is relevant for this exercise.  Irrelevant information includes any round that did not end in Win, Lose, or Draw, USCF ID, post-tournament rating, norm performance level, and whether the player started White or Black.  Ratings denoted as provisional ratings "P" were taken simply as the pre-tournament rating with "P" and subsequent numbers ignored.  
+
+## Import and separate data
+The first step in this project is to read in the textfile and separate the data, as explained in the introduction.  First, I will import the text file:
+
+```{r load-data}
+tournamentinfo <- readLines("C:\\Users\\Kim\\Documents\\Data607\\tournamentinfo.txt", warn = FALSE)
+tournamentinfo
+```
+
+When looking at the data imported to tournamentinfo, I can see that there are already line numbers associated. I can use these line numbers to access each row and iterate along the character list using the seq_along() function.  First, I will create an empty data frame consisting of row2 and row3.  Then, I will iterate along the list and place each player's row 2 and row 3 into the data frame.
+
+```{r data restructuring}
+
+tempTournamentInfo <- data.frame(
+  Row2 = character(),
+  Row3 = character()
+)
+
+tempTournamentInfo
+
+for (i in seq_along(tournamentinfo)) {
+  if (i != 3) {
+      if (i %% 3 == 0) {
+      new_row <- data.frame(Row2 = tournamentinfo[i-1], Row3 = tournamentinfo[i])
+      tempTournamentInfo <- rbind(tempTournamentInfo, new_row)
+      }
+  }
+}
+
+tempTournamentInfo
+```
+
+## Parse Data
+
+From the above, recall that each row in the dataframe now corresponds to each player.  The player's data is accessible in the columns row2 and row3, which needs to be parsed out further.  I can do this with the use of the separate() function to parse out the strings in Row2 and Row3 using the pipe delimiter provided.  Since the pipe character is used in regular expressions to denote an OR condition, a double backslash is needed to escape it from the regular expression and string.
+
+```{r separate, warning = FALSE}
+tempTournamentInfo_parsed <- tempTournamentInfo %>% separate(Row2, into = c("Number","Name","TotalPoints","Round1","Round2","Round3","Round4","Round5","Round6","Round7"), sep = "\\|") %>% separate(Row3, into = c("State","Rating_raw"), sep = "\\|")
+tempTournamentInfo_parsed
+```
+
+
+The new dataframe is now closer to the desired final result, but still needs some adjustment.  For instance, the pre tournament rating in Rating_raw needs to be separated from the ID and post tournament ratings.  This was done in a similar manner to the above, except with different separators designated.  Additionally, since Wins/Losses/Draws are not important information from this exercise, the opponent's tournament ID must be separated from the outcome of the match in each of the Round columns.  This is done via the str_extract function.
+```{r after-format, warning = FALSE}
+tempTournamentInfo_parsed <- tempTournamentInfo_parsed %>% separate(Rating_raw, into = c("USCF","Rating_raw"), sep = ": ") %>% 
+  separate(Rating_raw, into = c("pre_rating","post_rating"), sep = "-") %>%
+  separate(pre_rating, into = c("pre_rating","provisional"),sep = "P") %>% mutate(pre_rating = as.numeric(pre_rating)) %>%
+  subset(select = -c(post_rating,USCF,provisional)) 
+
+tempTournamentInfo_parsed
+tempTournamentInfo_parsed$Round1 <- str_extract(tempTournamentInfo_parsed$Round1, "(\\d\\d|\\d)")
+tempTournamentInfo_parsed$Round2 <- str_extract(tempTournamentInfo_parsed$Round2, "(\\d\\d|\\d)")
+tempTournamentInfo_parsed$Round3 <- str_extract(tempTournamentInfo_parsed$Round3, "(\\d\\d|\\d)")
+tempTournamentInfo_parsed$Round4 <- str_extract(tempTournamentInfo_parsed$Round4, "(\\d\\d|\\d)")
+tempTournamentInfo_parsed$Round5 <- str_extract(tempTournamentInfo_parsed$Round5, "(\\d\\d|\\d)")
+tempTournamentInfo_parsed$Round6 <- str_extract(tempTournamentInfo_parsed$Round6, "(\\d\\d|\\d)")
+tempTournamentInfo_parsed$Round7 <- str_extract(tempTournamentInfo_parsed$Round7, "(\\d\\d|\\d)")
+
+tempTournamentInfo_parsed
+```
+
+## List of Opponents
+
+Now that the opponent ID number are available in the Round columns, they will need to be concatenated for later use.
+
+```{r opponent-list}
+tempTournamentInfo_opponentList <- tempTournamentInfo_parsed %>% rowwise() %>% 
+  mutate(opponent_list = paste(na.omit(c_across(Round1:Round7)),collapse = ",")) %>% 
+  mutate(opponent_list = strsplit(opponent_list,",")) %>%
+  mutate(opponent_list = list(as.integer(opponent_list))) %>%
+  mutate(Number = as.integer(Number), Name = trimws(Name),TotalPoints = as.numeric(TotalPoints), State = trimws(State)) 
+```
+
+### Create Final Table
+
+I first create the final table structure with an empty data frame.  Then, With the opponent list generated above, a FOR loop is created to act like a window function.  For each player, a window of their opponents is created, and from there the average opponent rating can be calculated.  Finally, all of the information is inserted into the final data table, finalTournamentInfo. 
+```{r final-table}
+finalTournamentInfo <- data.frame(
+  Name = character(),
+  State = character(),
+  Total_Points = numeric(),
+  Pre_Rating = numeric(),
+  Avg_Opp_Rating = numeric()
+)
+
+for (i in seq_along(tempTournamentInfo_opponentList$Number)) {
+  Opp_Rating <- tempTournamentInfo_opponentList %>% 
+    filter(Number %in% tempTournamentInfo_opponentList$opponent_list[[i]]) %>% 
+    select(pre_rating)
+  Opp_Rating <- mean(Opp_Rating$pre_rating)
+  new_row <- data.frame(
+    Name = tempTournamentInfo_opponentList$Name[i], 
+    State = tempTournamentInfo_opponentList$State[i], 
+    Total_Points = tempTournamentInfo_opponentList$TotalPoints[i], 
+    Pre_Rating= tempTournamentInfo_opponentList$pre_rating[i],
+    Avg_Opp_Rating = round(Opp_Rating,digits = 0))
+  finalTournamentInfo <- rbind(finalTournamentInfo, new_row)
+}
+
+finalTournamentInfo
+
+```
+
+
+## Conclusion
+
+This project provided an overview of concepts explored in previous homework. For example, this project required importing data, creating data frames, and filtering data.  Regular expression concepts were implemented, such as with extracting the opponent ID from the Round columns and double escaping the pipe delimiter due to its normal use in regular expressions.  The concept of a window function was used in the creation of the final table.  This project also gave an introduction to the usage of FOR loops in R. For next steps in this project, I would look into a different strategy for finding the average opponent ratings, as manually creating a window seemed unnecessarily roundabout.  
+
+## Usage of ChatGPT
+
+In this assignment, I found ChatGPT useful in understanding R and R syntax.  For instance, when filtering based on the opponent list in the final data table, I was attempting to access the opponent_list via tempTournamentInfo_opponentList\$opponent_list[i] instead of tempTournamentInfo_opponentList\$opponent_list[[i]].  I created a number list to troubleshoot and compare the structure, and even stored the opponent list value into a vector to see if this would make a difference.  I noticed that tempTournamentInfo_opponentList\$opponent_list[i] was returning [[1]] before showing the number list, and asked ChatGPT for an explanation with the prompt "Why is [[1]] showing up in my vector created from taking value from df".  Their response clarified to me that the [[1]] was showing up due to the way I was accessing the elements of the data frame.  By accessing it with [[i]] instead, I was able to filter based on the opponent_list.  As anotherexample, in the creation of the final dataframe I originally used seq_along(tempTournamentInfo_opponentList) instead of seq_along(tempTournamentInfo_opponentList$Number).  This instead sequenced along the number of columns rather than rows.  I asked ChatGPT "Use seq_along with dataframe" and it showed a section on how to use seq_along() to iterate over rows.  Since I am relatively new to R, I also used ChatGPT to help with syntax; for example, I wanted to use modulus in R but did not know with certainty what the modulo operator was ("R modulo operator").  However, this is an instance where the use of ChatGPT was wholly unnecessary as it could have been easily found via a search engine.  
