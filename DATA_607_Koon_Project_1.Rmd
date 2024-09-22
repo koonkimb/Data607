@@ -96,7 +96,7 @@ tempTournamentInfo_opponentList <- tempTournamentInfo_parsed %>% rowwise() %>%
 
 ### Create Final Table
 
-I first create the final table structure with an empty data frame.  Then, With the opponent list generated above, a FOR loop is created to act like a window function.  For each player, a window of their opponents is created, and from there the average opponent rating can be calculated.  Finally, all of the information is inserted into the final data table, finalTournamentInfo. 
+I first create the final table structure with an empty data frame.  Then, With the opponent list generated above, a FOR loop is created to act like a window function.  For each player, a window of their opponents is created, and from there the average opponent rating can be calculated.  Finally, all of the information is inserted into the final data table, finalTournamentInfo, and it is exported via the write.csv function.  Quotes are set to false, as the assignment suggested the CSV may be loaded into SSMS.  Dealing with the excess quotes from the CSV file when imported into SSMS would be cumbersome.
 ```{r final-table}
 finalTournamentInfo <- data.frame(
   Name = character(),
@@ -121,6 +121,8 @@ for (i in seq_along(tempTournamentInfo_opponentList$Number)) {
 }
 
 finalTournamentInfo
+
+write.csv(finalTournamentInfo, file = "C:\\Users\\Kim\\Documents\\Data607\\finalTournamentInfo.csv", quote = FALSE)
 
 ```
 
