@@ -1,0 +1,92 @@
+---
+title: "Data 607 Assignment 5"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+```
+
+### Overview / Introduction
+
+For this assignment, we are given a table in an untidy structure.  This table contains information on Alaska and AmWest airline flights to Los Angeles, Phoenix, San Diego, San Francisco, and Seattle.  Specifically, it contains information on the number of delayed and on-time flights to each of these destinations.  This untidy data was created as a CSV file and then transformed into a more easily manipulated structure.  Then, analysis was performed to compare the arrival delays.  This analysis was done in the form of two bar graphs, used for comparing the arrival delays between the two airlines.
+
+## Create a CSV file that includes all of the information
+
+To mimic the wide structure of the data, I included all of the destinations as columns for the table.  The timing of the flight (e.g. delayed or on time) and the airline were also included as columns
+
+```{SQL, eval = FALSE}
+drop table if exists airlines
+
+create table airlines (
+airline nvarchar(50),
+timing nvarchar(50), 
+Los_Angeles int,
+Phoenix int,
+San_Diego int,
+San_Francisco int,
+Seattle int)
+
+insert into airlines 
+values ('Alaska','on_time', 497, 221, 212, 503, 1841),
+('Alaska','delayed', 62, 12, 20, 102, 305),
+('AmWest','on_time', 694, 4840, 383, 320, 201),
+('AmWest','delayed', 117, 415, 65, 129, 61)
+
+
+```
+
+## Read information into R and tidy/transform the data
+
+To tidy the data, I used the pivot_longer function to turn all the destinations into rows.  This created two columns, Destination and CountFlights.
+
+```{r load-data}
+airlines <- read.csv("C:\\Users\\Kim\\Documents\\Data607\\airlines.csv", header = TRUE, sep = ",")
+airlines
+
+airlines_pivot <- airlines %>% 
+  pivot_longer(c(Los_Angeles,Phoenix,San_Diego,San_Francisco,Seattle),
+               names_to = "Destination", values_to = "CountFlights")
+airlines_pivot
+```
+
+## Perform Analysis to compare arrival delays for the two airlines
+
+From the following bar graph, AmWest appears to have significantly more delays than Alaska in Phoenix.  Amwest also has more delays in Los Angeles, San Diego, and San Francisco, although the difference is less staggering.  Alaska has more delays than Amwest for flights to Seattle.
+
+```{r delay_analysis}
+airlines_pivot %>% filter(timing == "delayed") %>% 
+  ggplot(aes(fill = airline, y = CountFlights, x = Destination)) + 
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(y = "Flights", title = "Number of Delayed Flights")
+```
+
+However, this may be misleading as Amwest and Alaska do not have the same number of flights to each destination.  To standardize flight delays, we can use percentage delay as a better metric. First, I split the dataset based on the timing of the flight (e.g. on time or delayed).  Then, I joined the dataset based on destination and airline so that each row contains airline, destination, count of delayed flights, and count of on time flights.  The timing columns were dropped as they were no longer needed.  From there, percentage can be calculated and graphed.  We can see now that Amwest has a greater percentage of delayed flights at all of the destinations.
+
+```{r delay_analysis_percentage}
+airlines_delayed <- airlines_pivot %>% filter(timing == "delayed") 
+airlines_on_time <- airlines_pivot %>% filter(timing == "on_time")
+airlines_delayed_on_time <- inner_join(airlines_delayed, airlines_on_time, by = c("airline","Destination")) %>% 
+  rename(delayedFlights = CountFlights.x, on_timeFlights = CountFlights.y) %>% select(-timing.x, -timing.y) %>%
+  mutate(total_flights = delayedFlights + on_timeFlights) %>%
+  mutate(percent_delayed = 100 * delayedFlights / total_flights, percent_on_time = 100 * on_timeFlights / total_flights)
+airlines_delayed_on_time
+
+airlines_delayed_on_time  %>% 
+  ggplot(aes(fill = airline, y = percent_delayed, x = Destination)) + 
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(y = "Delayed Percentage", title = "Percentage of Delayed Flights")
+
+```
+
+
+## Conclusion
+
+This assignment introduced me to the pivot_longer function, which was incredibly useful in transforming badly structured data into a more usable format.  In an earlier assignment with the movie ratings, I had re-done the structure of my table in SQL after my first attempt.  I had essentially gone back and restructured the table manually in SQL when inserting the values.  However, with pivot_longer, I would have been able to do this in R with less effort.  After using the pivot_longer function, it was easy to create a better table structure using table joins, and this resulted in the final table structure with Airline, Destination, Delayed Flights, On Time Flights, Total Flights, Delayed Flight Percentage, and On Time Flight Percentage as the table columns.  
