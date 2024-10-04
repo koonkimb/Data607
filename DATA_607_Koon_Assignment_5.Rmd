@@ -12,6 +12,7 @@ editor_options:
 
 ```{r load-packages, message=FALSE}
 library(tidyverse)
+library(sqldf)
 ```
 
 ### Overview / Introduction
@@ -36,9 +37,10 @@ Seattle int)
 
 insert into airlines 
 values ('Alaska','on_time', 497, 221, 212, 503, 1841),
-('Alaska','delayed', 62, 12, 20, 102, 305),
+('','delayed', 62, 12, 20, 102, 305),
+(NULL,NULL,NULL,NULL,NULL,NULL,NULL),
 ('AmWest','on_time', 694, 4840, 383, 320, 201),
-('AmWest','delayed', 117, 415, 65, 129, 61)
+('','delayed', 117, 415, 65, 129, 61)
 
 
 ```
@@ -49,11 +51,17 @@ To tidy the data, I used the pivot_longer function to turn all the destinations 
 
 ```{r load-data}
 airlines <- read.csv("C:\\Users\\Kim\\Documents\\Data607\\airlines.csv", header = TRUE, sep = ",")
-airlines
+
+airlines <- airlines[-3,]
+
+airlines[2,"airline"] <- "Alaska"
+airlines[4,"airline"] <- "AmWest"
+
 
 airlines_pivot <- airlines %>% 
   pivot_longer(c(Los_Angeles,Phoenix,San_Diego,San_Francisco,Seattle),
                names_to = "Destination", values_to = "CountFlights")
+airlines_pivot$CountFlights <- as.integer(airlines_pivot$CountFlights)
 airlines_pivot
 ```
 
