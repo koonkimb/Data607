@@ -1,0 +1,288 @@
+---
+title: "Data 607 Project 2"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(sqldf)
+```
+
+### Overview / Introduction
+
+For this project, I chose two weather related datasets and resubmitted my Homework 5 assignment.  The two weather related datasets were from NOAA and NCAA.  To collect this data, I created a web scraper in Python which pulled the data from the websites and formatted it into a dataframe.  From there, I am able to pull the data into RStudio and begin the process of data cleaning.  
+
+The NOAA dataset contained data of historic storms.  It is incredibly messy, with inconsistent format within many columns.  Multiple columns have more than one piece of data, and there are also many missing values.  The data includes date, the name of the storm (in most cases), the level of surge, various impact variables, and more.  The NCAA dataset contains data on monthly snowfall in Buffalo, with data spanning back decades.  The scraped data has repeated headers and some "missing" data, indicated by a T which represents trace amounts of snowfall that was not measurable.  
+
+## Historic Storms Dataset: Create a CSV file that includes all of the information
+
+For my first dataset, I used the historical storms data from NOAA. This dataset includes historic named storms from the 2010's to current day.  To create the CSV file, I used BeautifulSoup to scrape the data from the NOAA website directly.  
+
+```{python, eval = FALSE, python.reticulate = FALSE}
+import re
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+import numpy as np
+
+full_url = "https://vlab.noaa.gov/web/mdl/historic-storms"
+print(full_url)
+page = requests.get(full_url, headers={"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 12871.102.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.141 Safari/537.36"}).text
+soup = BeautifulSoup(page, "html.parser")
+
+pre_tags = []
+index = 0
+
+allData = soup.find_all('pre')
+
+for i in allData:
+    pre_tags.insert(len(pre_tags),i.get_text().strip())
+    index += 1
+
+num_rows = int(index/7)
+num_columns = 7
+
+df = pd.DataFrame(np.array(pre_tags).reshape(num_rows, num_columns))
+
+df.columns = ['Storm','Date','Storm-Tide','Obs','Guidance','Cat,Pres,Dead,$bn','Area']
+
+df.to_csv("stormdata.csv",sep =';',index=False)
+
+
+```
+
+## Approach
+
+Looking at the data, I see there are many rows with newline characters.  There are also various columns that can be split into multiple.  My approach for cleaning the data will be to remove newlines, split the columns appropriately (Storm, Storm Tide, Cat Pres Dead $bn), transform date into start date, and then convert each Area to its own row.
+
+# Load Data
+
+```{r load-data, warning = FALSE}
+stormdata <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 2\\stormdata.csv", header = TRUE, sep = ";")
+stormdata
+```
+
+# Remove newlines
+
+```{r remove-newlines-data, warning = FALSE}
+stormdata <- stormdata %>% mutate(across(everything(), ~ str_replace_all(.,"[\n]"," ")))
+```
+
+# Clean up Storm column
+
+I cleaned up the Storm column by first extracting the year and removing it from the column.  Next, I extract whether the name of the storm is required by matching (R) in the Storm column, and remove this as well.  Lastly, I extract the Oceanic Basin with a regex that identifies a dash followed by any two alphabetical characters, and then remove this from the Storm column.  I bumped up year to the first column of the dataset.  If year only has two numbers, I added a "20" preceeding those numbers, as this data is only for 2000s data.
+
+```{r storm-data, warning = FALSE}
+stormdata <- stormdata %>% 
+  mutate(year = as.numeric(str_extract(Storm, "\\d+(?=-)"))) %>% 
+  mutate(Storm = str_replace_all(Storm,"^.*?-","")) %>%
+  mutate(retiredName = str_match(Storm, "\\([R]\\)")) %>%
+  mutate(Storm = str_replace_all(Storm,"\\s\\([R]\\)","")) %>%
+  mutate(OceanicBasin = str_extract(Storm, "(?<=-)[a-z]{2}$")) %>%
+  mutate(Storm = str_replace_all(Storm,"-[a-z]{2}$","")) %>%
+  select(year,everything()) %>%
+  mutate(year = str_replace(year,"^\\d{2}$",paste("20",year,sep = "")))
+
+stormdata
+```
+
+# Clean up Date
+
+For the sake of analysis, I will be transforming Date to Start Date.  To do this, I will take only the text before a dash or comma, concatenate the results with year, and change the character representation of month to numeric.
+
+```{r date-data, warning = FALSE}
+stormdata <- stormdata %>% 
+  mutate(startDate = str_extract(Date, "^(.*?)(?=-|,)|^(.*)$")) %>% 
+  mutate(startDate = str_replace(startDate,".*\\s\\d{1}$",paste(substr(startDate,1,nchar(startDate)-1),0,substr(startDate,nchar(startDate),nchar(startDate)),sep=''))) %>%
+  mutate(startDate = str_replace(startDate,"\\s$","")) %>%
+  mutate(startDate = paste(year,startDate)) %>%
+  mutate(startDate = str_replace_all(startDate,"Jan","01")) %>%
+  mutate(startDate = str_replace_all(startDate,"Feb","02")) %>%
+  mutate(startDate = str_replace_all(startDate,"Mar","03")) %>%
+  mutate(startDate = str_replace_all(startDate,"Apr","04")) %>%
+  mutate(startDate = str_replace_all(startDate,"May","05")) %>%
+  mutate(startDate = str_replace_all(startDate,"Jun","06")) %>%
+  mutate(startDate = str_replace_all(startDate,"Jul","07")) %>%
+  mutate(startDate = str_replace_all(startDate,"Aug","08")) %>%
+  mutate(startDate = str_replace_all(startDate,"Sep","09")) %>%
+  mutate(startDate = str_replace_all(startDate,"Oct","10")) %>%
+  mutate(startDate = str_replace_all(startDate,"Nov","11")) %>%
+  mutate(startDate = str_replace_all(startDate,"Dec","12")) %>%
+  mutate(startDate = as.Date(str_replace_all(startDate,"\\s","-"))) %>%
+  select(Storm, startDate, year,everything())
+stormdata
+```
+
+# Clean up Storm Tide
+
+Next, I will clean up the Storm Tide column to extract either the MHHW or AGL.  The conversion of MHHW to AGL and vice versa is complicated as it involves vertical datums where the benchmark value may vary based on location.  For the sake of this exercise, although MHHW was extracted, I will be using only AGL for analysis.  For N/A and MHHW datapoints, they will be excluded from the analysis.  This decision was made based on AGL being present in most of the data (i.e. the dataset has more AGL values), and because it does not detract from the exercise to remove MHHW (as the exercise is not to delve deeply into the world of vertical tidal datums).  Additionally, it appears only the previous year has been recorded in mostly MHHW, so it is essentially just an omission of the latest year data.  The lack of MHHW values do not seem significant in any way (e.g. the missing values do not appear to be correlated to storm severity).  
+
+```{r storm-tide-data, warning = FALSE}
+stormdata <- stormdata %>% 
+  mutate(MHHW = str_extract(Storm.Tide, "(?<=:\\s).*?(?=\\smhhw)")) %>%
+  mutate(AGL = str_extract(Storm.Tide, "(?<=:\\s).*?(?=\\sagl)")) %>%
+  mutate(maxAGL = str_extract(AGL, "((?<=-)|(?<=\\<\\s)).*"))
+stormdata
+```
+
+# Clean up Cat Pres Dead $bn
+
+```{r impact-data, warning = FALSE}
+stormdata <- stormdata %>% 
+  mutate(Cat.Pres.Dead..bn = str_extract(Cat.Pres.Dead..bn, "(?<=\\().*(?=\\))")) %>%
+  separate(Cat.Pres.Dead..bn, into = c("Category","Pressure","Dead","Cost"), sep = ",") %>%
+  mutate(MinCost = str_extract(Cost,"(?<=\\$).*")) %>%
+  mutate(MinCost = str_replace(MinCost,"\\+$","")) %>%
+  mutate(MinCost = as.numeric(MinCost) * 1000000000) %>%
+  mutate(Pressure = str_replace(Pressure,"mb","")) %>%
+  mutate(Pressure = as.numeric(Pressure)) %>%
+  mutate(Dead = as.integer(Dead))
+
+stormdata
+```
+
+#  Separate out Areas
+```{r area-data}
+stormdata <- stormdata %>%
+  separate_rows(Area,sep = ", ") 
+```
+
+# Remove columns not used in analysis and rows with NA values in important categories
+
+```{r clean-up-data}
+Analyze_storm_data <- stormdata %>%
+  select(Storm, Area, startDate, year, Category, Pressure, Dead, maxAGL, MinCost) %>%
+  drop_na(maxAGL)
+
+print(Analyze_storm_data,n=100)
+```
+
+# Perform Relational Analysis
+
+After graphing various relationships between time, maxAGL, Pressure, Dead, and MinCost, most data appears not to exhibit any obvious trends.  The exception is the number Dead graphed against Minimum Cost, where it seems to have a positively correlated relationship (costs increase as number dead increases).  
+
+```{r analyze-data}
+Analyze_storm_data %>% ggplot(aes(x = maxAGL,y = MinCost)) + geom_point()
+Analyze_storm_data %>% ggplot(aes(x = maxAGL,y = Dead)) + geom_point()
+Analyze_storm_data %>% ggplot(aes(x = Dead,y = MinCost)) + geom_point()
+Analyze_storm_data %>% ggplot(aes(x = maxAGL,y = Pressure)) + geom_point()
+Analyze_storm_data %>% ggplot(aes(x = startDate,y = maxAGL)) + geom_point()
+Analyze_storm_data %>% ggplot(aes(x = startDate,y = Pressure)) + geom_point()
+Analyze_storm_data %>% ggplot(aes(x = startDate,y = MinCost)) + geom_point()
+```
+
+# Perform Categoric Analysis
+
+We can look at number of named hurricanes per geographic area with the following bar chart.  However, next steps for data cleaning could be performing a better geographic categorization of the areas, as the format is inconsistent (e.g. format is shown in region of a state, state, region of the US, and even other countries outside of the US).  Instead, only a standardized format should be used, like State.  This would mean that other non-US countries should be excluded from this dataset, and an understanding of the larger categories (e.g. New England) would have to be developed.
+
+```{r analyze-data-categoric}
+count_area <- Analyze_storm_data %>%
+  group_by(Area) %>%
+  summarise(count = n())
+
+count_area %>% ggplot(aes(x = count, y = reorder(Area,count))) +  
+  geom_col() + 
+  labs(title = "Number of Named Storms with Measureable Storm Surge since 2011", 
+       y = "Area")
+```
+
+## Buffalo Snow Dataset: Create a CSV file that includes all of the information
+
+For my second dataset, I used the Buffalo Monthly Snowfall data from NCAA. This dataset monthly snowfall from 1940 to current day.  To create the CSV file, I used BeautifulSoup to scrape the data from the NCAA website directly.  
+
+```{python, eval = FALSE, python.reticulate = FALSE}
+import re
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+import numpy as np
+
+full_url = "https://www.weather.gov/buf/BuffaloSnow"
+print(full_url)
+page = requests.get(full_url, headers={"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 12871.102.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.141 Safari/537.36"}).text
+soup = BeautifulSoup(page, "html.parser")
+
+tags = []
+index = 0
+
+def returnTrue(tag):
+    return tag.font;
+
+allData = soup.find_all("tr")
+
+for i in allData:
+    tags.insert(len(tags),i.get_text().strip())
+
+df = pd.DataFrame(columns = ['SEASON','JUL','AUG','SEP','OCT','NOV','DEC','JAN','FEB','MAR','APR','MAY','JUN','ANNUAL'])
+
+for element in tags:
+    row = element.strip().split('\n')
+    #print(row)
+    if len(row) == 14:
+        df.loc[len(df)] = row
+ 
+
+df.to_csv("buffalosnow.csv",sep =';',index=False)
+
+```
+
+## Approach
+
+This dataset appears to be cleaner than the storm dataset.  Some potentially problematic areas would be the use of T to indicate "Trace" and the repeated headers located in the data.  
+
+# Load Data
+
+```{r load-data2, warning = FALSE}
+buffalosnow <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 2\\buffalosnow.csv", header = TRUE, sep = ";")
+buffalosnow
+```
+
+# Remove Repeated Headers
+
+```{r remove-headers-data, warning = FALSE}
+buffalosnow <- buffalosnow %>% filter(SEASON != "SEASON")
+```
+
+# Replacements
+
+Since T indicates Trace, this is effectively an unmeasureable amount of snowfall.  As such, T will be replaced by 0 in the data. There is also one value listed as 2,.5 due to a data entry error (April of the 75-76 season) - this was replaced by 2.5 based on the annual snowfall for that year minus the sum of snowfall for the other months.  NA values were dropped as the scraped table included future months.
+
+```{r replacements-data, warning = FALSE}
+buffalosnow <- buffalosnow %>%
+  mutate(across(everything(), ~ str_replace_all(.,"[T]","0"))) %>%
+  mutate(across(everything(), ~ str_replace_all(.,"\\s","0"))) %>%
+  drop_na()
+
+
+buffalosnow$APR[36] <- 2.5
+
+
+buffalosnow <- buffalosnow %>%
+pivot_longer(c(JUL,AUG,SEP,OCT,NOV,DEC,JAN,FEB,MAR,APR,MAY,JUN,ANNUAL), names_to = "TimeCategory", values_to = "Snowfall") %>%
+  mutate(Snowfall = as.numeric(Snowfall))
+
+buffalosnow
+```
+
+# Perform Categoric Analysis
+
+```{r analyze-snow-data-categoric}
+buffalosnow %>% filter(TimeCategory != "ANNUAL") %>% 
+  group_by(TimeCategory) %>% 
+  summarise(averageSnowfall = mean(Snowfall)) %>% 
+  ggplot(aes(x = reorder(TimeCategory, -averageSnowfall), y = averageSnowfall)) + 
+  geom_bar(stat = "identity") + 
+  labs(x = "Month", y = "Average Snowfall in inches", 
+       title = "Months by Average Snowfall in Buffalo")
+```
+
+
+## Conclusion
+This project provided a lot of practice using regular expressions.  Most of the data cleaning involved regex to extract data from columns that contained more than one piece of information.  I also had to remove and replace many data values, such as newline characters and extraneous symbols.  The NOAA historic storm dataset in particular was difficult to clean given the extent of untidiness.  There were also some parts of the data that were difficult to clean due to the lack of context provided in the dataset and documentation.  One example is the conversion of MHHW to AGL, which did not seem like an easy task based on the information I found on Vertical Datums.  Moreover, the inconsistently formatted data had proved to be a large obstacle in data cleaning, as many regex mutations on the data had to be performed due to these inconsistencies.  In comparison, the NCAA Buffalo snowfall dataset was much more consistent.  For next steps in data cleaning, I would propose to better characterize the geographic data in the historic storms data, as discussed in the section of categorical analysis in the NOAA section.  I would also propose an additional step in the Buffalo Snowfall data, which would be to add the "correct" year to each row, as Season appears to be listed in a way that ignores calendar year.  Each month could be attributed to the correct year, as the July through December months would correspond to the earlier year listed in the season while January through June would correspond to the later year listed in the season.  This could be done by a conditional.  "Annual" rows could also be dropped from the dataset and recalculated as necessary, but its existence in the dataset does not provide much value as the annual snowfall can be summed up easily if required; there is no reason it needs to be its own row.  

@@ -1,0 +1,119 @@
+Storm;Date;Storm-Tide;Obs;Guidance;Cat,Pres,Dead,$bn;Area
+2024-Helene;Sep 23-29;"Obs w4: >9.3 mhhw
+Fcst w6: 15-20 mhhw";(FEV);Warn-A6 (1-8);(Cat4, 938, 221+, $27.5+);"N.W. FL, GA, AL,
+TN, KY, VA, WV"
+2024-Francine;Sep 12;w2: 5 mhhw;;Warn-A5 (1-15);(Cat2, 972, 0, $1.5);LA, MS
+2024-Gilma-cp;Aug 30;w1: 3 mhhw;;PS-Adv 43,46;(Cat4, 949, -, -);HI
+2024-Hone-cp;Aug 25;w1: 3 mhhw;;"PS-Adv 2-7,
+9-11,13,14";(Cat1, 988, -, -);HI
+"2024-Post-
+Typhoon Ampil";Aug 22;w3: 6.3 mhhw;;P-ETSS;(Cat4, 947, -, -);AK
+2024-Debby;Aug 5,6;w2: 5.1 mhhw;(FEV);Warn-A5 (6-20);(Cat1, 979, 10, >$1);N.W. FL, GA, SC, NC
+2024-Beryl;Jul 8;w3: 8 mhhw;;Warn-A33 (29-41);(Cat5, 934, 70, >$6.86);TX, LA
+2024-Alberto;Jun 19,20;w1: 3 mhhw;;;(TS, 993, 5, $0.179);TX, LA
+2023-Otis-ep (R);Oct 22-25;;;;(Cat5, 922, 52+, $16);MEX
+2023-Bolaven-wp;Oct 6-14;;;;(Typhoon, 903, 0, -);Guam
+2023-Ophelia;Sep 22-24;w2: 3-5 agl;(TCR,FEV);Warn-A4;(TS, 981, 0, $0.450);NC, VA, MD, NY, DE
+2023-Lee;Sep 13,14;w1: 1-2 agl;(TCR,FEV);"Watch-A34
+(34-37)";(Cat5, 926, 3, $0.050);New England
+2023-Idalia;Aug 27-31;w4: 8-12 agl;(TCR,FEV);Warn-A15 (5-20);(Cat4, 940, 7, $2.5);N.W. FL
+2023-Hillary-ep;Aug 16-22;;;;(Cat4, 939, 2, $0.690);CA
+2023-Dora-cp (R);"Jul 31 -
+Aug 21";;;;(Cat4, 939, -, -);HI
+2023-Calvin-cp;Jul 11-19;;;;(Cat3, 955, -, -);HI
+2023-Mawar-wp;"May 19 -
+Jun 3";;;;(Cat5, 897, 6, $0.250);Guam
+2023-Jan28;Jan 28,29;;;P-ETSS;;
+2023-Jan14;Jan 14-17;;;P-ETSS;;
+2022-Nicole;Nov 7-11;w2: 5 agl;(TCR);Warn-A12;(Cat1, 980, 11, $1);PR, FL
+2022-Ian (R);Sep 26-30;w5: 10-15 agl;(TCR,FEV);Warn-A18 (12-33);(Cat5, 937, 161, $113);S.W. FL, SC
+2022-Fiona (R);Sep 14-27;w1: 1-3 agl;(TCR);;(Cat4, 931, 29, $3.4);PR
+"2022-Post-
+Typhoon Merbok";Sep 14-19;w5: 12.5 agl;(FEV);P-ETSS;(Cat1, 965, -, -);AK
+2021-Oct;Oct 28;;(FEV);"P-ETSS
+River Forcing";;MD, DE
+2021-Nicholas;Sep 12-20;w2: 3-6 agl;(TCR);Warn-A5 (2);(Cat1, 988, 2, $1.1);N. TX
+2021-Ida (R);Aug 27-30;w5: 9-14 agl;"(TCR,FEV)
+(Service)";Warn-A7 (3-18);(Cat4, 929, 107, $75.3);New Orleans
+2021-Henri;Aug 20-22;w2: 2-4 agl;(TCR,FEV);Warn-A22 (18-27);(Cat1, 986, 2, $0.7);New England
+2021-Fred;Aug 15,16;w2: 2-4 agl;(TCR);Warn-A28 (24-29);(TS, 991, 7, $1.3);N.W. FL
+2021-Elsa;"Jun 30 -
+Jul 10";w1: 1-3 agl;(TCR);Warn-A28;(Cat1, 991, 13, $1.2);East Coast
+2020-Iota (R);Nov 13-18;;;;(Cat4, 917, 84, $1.4);"NIC, HND, COL,
+SLV, GTM, PAN"
+2020-Eta (R);Nov 8,9;w1: 3 agl;(TCR);Warn-A33 (31-35);(Cat4, 922, 175, $8.3);FL (Tampa Bay)
+2020-Zeta;Oct 26-29;w4: 6-10 agl;(TCR);Warn-A11 (9-18);(Cat3, 970, 9, $4.4);New Orleans
+2020-Delta;Oct 7-10;w3: 6-9 agl;(TCR);Warn-A12 (12-22);(Cat4, 953, 6, $3.0);LA
+2020-Beta;Sep 17-25;w2: 4.2 agl;(TCR);Warn-A9 (-);(TS, 993, 1, $0.225);TX, LA, MS
+2020-Sally;Sep 12-16;w3: 5-7 agl;(TCR);Warn-A8 (5-21);(Cat2, 965, 4, $7.3);New Orleans
+2020-Laura (R);Aug 24-27;w6: 12-18 agl;(TCR);Warn-A23 (19-30);(Cat4, 937, 81, $23.3);LA
+2020-Marco;Aug 22-24;w1: 1-2 agl;(TCR);Warn-A13 (10-16);(Cat1, 991, 0, $0.035);New Orleans
+2020-Isaias;"Jul 31 -
+Aug 4";w2: 3-6 agl;(TCR);Warn-A23 (15-30);(Cat1, 986, 17, $5.03);East Coast
+'20-Douglas-cp;Jul 20-30;;;;(Cat4, 954, -, -);HI
+2020-Hanna;Jul 24-26;w2: 3-5 agl;(TCR);Warn-A11 (8-13);(Cat1, 973, 9, $1.2);S. TX
+2020-Cristobal;Jun 1-12;w3: 6.2 agl;(TCR);Warn-A17 (-);(TS, 988, 46, $0.865);LA
+2019-Imelda;Sep 17-19;w1: 1-2 agl;(TCR);;(TS, 1003, 7, $4.8);TX, LA
+2019-Dorian (R);Sep 1-6;w3: 5-7 agl;(TCR);WarnA-35 (33-53);(Cat5, 910, 84, $5.1);FL, NC
+2019-Barry;Jul 10-14;w2: 4-6 agl;(TCR);WarnA-5 (1-16);(Cat1, 993, 3, $0.9);LA
+2019-Wutip-wp;"Feb 18 -
+Mar 2";;;;(Typhoon, 895, -, -);Guam
+2018-Michael (R);Oct 7-11;w5: 9-14 agl;"(TCR,FEV)
+(Service)";Warn-A10 (7-17);(Cat5, 919, 74, $25.5);US Gulf Coast
+'18-Mangkhut-wp;Sep 6-17;;;;(Typhoon, 868, 134, $3.77);Guam
+2018-Isaac;Sep 7-15;;(FEV);;(Cat1, 995 mb);PR - (Rain)
+2018-Gordon;Sep 3-8;w1: 1-3 agl;(TCR);Warn-A5 (3-11);(TS, 996, 3, $0.2);MS, AR, FL Keys
+'18-Florence (R);"Aug 31 -
+Sep 8";w4: 8-11 agl;"(TCR,FEV)
+(Service)";Warn-A50 (48-65);(Cat4, 937, 54, $24.2);Eastern US
+2018-Lane-cp;Aug 15-29;;(FEV);;(Cat5, 926, 1, $0.25);HI
+2018-Maria-wp;Jul 3-12;;;;(Typhoon, 910, 2, $0.637);Guam
+2018-Alberto;"May 25 -
+Jun 1";w1: 1-3 agl;(TCR);Watch-A2 (1);(TS, 990, 18, $0.125);MS
+2018-Mar1;"Feb 28 -
+Mar 1";;(FEV);P-ETSS;;"DE, NJ, NY, CT,
+RI, VT, ME"
+2018-Gita-sp;Feb 3-22;;;;(Cat4, 927, 1, $0.253);Am Samoa
+2018-Jan17;Jan 3-17;;(FEV);P-ETSS;;MA
+2017-Nate (R);Oct 4-9;w3: 6-9 agl;(TCR,FEV);Warn-A9 (7-16);(Cat1, 981, 48, $0.787);AL, LA, MS
+2017-Maria (R);Sep 16-30;w3: 6-9 agl;(TCR,FEV);Warn-A42 (35-46);(Cat5, 908, 3,059, $91.6);PR
+2017-Jose;Sep 5-25;w1: < 3 agl;(TCR,FEV);P-ETSS;(Cat4, 938, 1, $0.00284);CT, RI, MA
+2017-Irma (R);"Aug 30 -
+Sep 12";w3: 5-8 agl;(TCR,FEV);Warn-A36 (34-51);(Cat5, 914, 52, $77.2);FL, PR
+2017-Harvey (R);"Aug 17 -
+Sep 1";w4: 6-10 agl;"(TCR,FEV)
+Service";Warn-A25 (23-42);(Cat4, 937, 107, $125);TX, LA
+2017-Mar;"Mar 13-
+Apr 13";;(FEV);P-ETSS;;NY
+2016-Otto (R);Nov 20-26;;;;(Cat3, 975, 23, $0.192);PAN, CRI, NIC
+2016-Matthew (R);"Sep 28 -
+Oct 9";w3: 5-7 agl;"(TCR,FEV)
+Service";P-Surge (26-44);(Cat5, 934, 731, $16.5);SE US
+2016-Hermine;"Aug 28 -
+Sep 8";w3: 4-7 agl;(TCR,FEV);P-Surge (11-24);(Cat1, 981, 4, $0.55);N.W. FL
+2016-Colin;Jun 5-7;w1: < 3 agl;(TCR);P-Surge (26-40);(TS, 1001, 6, $0.001);N.W. FL
+2016-Jan;Jan 23-24;w2: 3.5 mhhw;Service;ETSS-2.0;(ET, 983, 55, $0.5);DE, NJ (Cape May)
+"2015-
+Patricia-ep (R)";Oct 20-24;;;;(Cat5, 872, 8, $0.463);MEX, TX
+2015-Joaquin (R);"Sep 28 -
+Oct 8";w2: 3-4 agl;(TCR,FEV);ETSS-2.0;(Cat4, 931, 34, $0.2);VA, BHS, BMU, CUB, HTI
+2015-Erika (R);Aug 24-28;;;;(TS, 1001, 35, $0.511);DMA, HTI
+2015-Chan-hom-wp;"Jun 29 -
+Jul 13";;;;(Typhoon, 933, 18, $1.59);Guam
+2015-Dolphin-wp;May 6-24;;;;(Typhoon, 918, 1, $0.014);Guam
+2015-Jan;Jan 26-28;w2: 3.4 mhhw;(FEV);ETSS-2.0;;CT, MA
+2014-Odile-ep (R);Sep 10-19;;;;(Cat4, 918, 18, $1.25);MEX
+2014-Arthur;Jul 1-9;w2: 3-5 agl;(TCR);P-Surge (6-14);(Cat2, 973, 0, $0.040);NC
+2013-Francisco-wp;Oct 15-26;;;;(Typhoon, 920, 0, $0.0002);Guam
+2013-Manuel-ep (R);Sep 13-20;;;;(Cat1, 983, 169, $4.2);MEX
+2013-Ingrid (R);Sep 12-17;;;;(Cat1, 983, 32, $1.5);MEX
+2012-Sandy (R);Oct 22-29;w3: 4-9 agl;"(TCR,FEV)
+Service";P-Surge (21-31);(Cat3, 940, 254, $68.7);"Mid-Atlantic,
+NE US"
+2012-Isaac;"Aug 21 -
+Sep 3";w6: 10-17 agl;(TCR);P-Surge (16-38);(Cat1, 965, 41, $3.1);LA
+2011-Nov;Nov 4-11;;;ETSS;(ET, 943, 1, $0.024);AK
+2011-Lee;Sep 2-7;w2: 4.76;(TCR,FEV);;(TS, 986, 18, $2.8);LA, MS
+2011-Irene (R);Aug 21-30;w4: 8-11;"(TCR,FEV)
+Service";P-Surge (20-34);(Cat3, 942, 58, $14.2);"Mid-Atlantic,
+NE US"
