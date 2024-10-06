@@ -15,7 +15,7 @@ library(tidyverse)
 library(sqldf)
 ```
 
-### Overview / Introduction
+## Overview / Introduction
 
 For this project, I chose two weather related datasets and resubmitted my Homework 5 assignment.  The two weather related datasets were from NOAA and NCAA.  To collect this data, I created a web scraper in Python which pulled the data from the websites and formatted it into a dataframe.  From there, I am able to pull the data into RStudio and begin the process of data cleaning.  
 
@@ -58,24 +58,24 @@ df.to_csv("stormdata.csv",sep =';',index=False)
 
 ```
 
-## Approach
+### Approach
 
 Looking at the data, I see there are many rows with newline characters.  There are also various columns that can be split into multiple.  My approach for cleaning the data will be to remove newlines, split the columns appropriately (Storm, Storm Tide, Cat Pres Dead $bn), transform date into start date, and then convert each Area to its own row.
 
-# Load Data
+### Load Data
 
 ```{r load-data, warning = FALSE}
 stormdata <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 2\\stormdata.csv", header = TRUE, sep = ";")
 stormdata
 ```
 
-# Remove newlines
+### Remove newlines
 
 ```{r remove-newlines-data, warning = FALSE}
 stormdata <- stormdata %>% mutate(across(everything(), ~ str_replace_all(.,"[\n]"," ")))
 ```
 
-# Clean up Storm column
+### Clean up Storm column
 
 I cleaned up the Storm column by first extracting the year and removing it from the column.  Next, I extract whether the name of the storm is required by matching (R) in the Storm column, and remove this as well.  Lastly, I extract the Oceanic Basin with a regex that identifies a dash followed by any two alphabetical characters, and then remove this from the Storm column.  I bumped up year to the first column of the dataset.  If year only has two numbers, I added a "20" preceeding those numbers, as this data is only for 2000s data.
 
@@ -93,7 +93,7 @@ stormdata <- stormdata %>%
 stormdata
 ```
 
-# Clean up Date
+### Clean up Date
 
 For the sake of analysis, I will be transforming Date to Start Date.  To do this, I will take only the text before a dash or comma, concatenate the results with year, and change the character representation of month to numeric.
 
@@ -120,7 +120,7 @@ stormdata <- stormdata %>%
 stormdata
 ```
 
-# Clean up Storm Tide
+### Clean up Storm Tide
 
 Next, I will clean up the Storm Tide column to extract either the MHHW or AGL.  The conversion of MHHW to AGL and vice versa is complicated as it involves vertical datums where the benchmark value may vary based on location.  For the sake of this exercise, although MHHW was extracted, I will be using only AGL for analysis.  For N/A and MHHW datapoints, they will be excluded from the analysis.  This decision was made based on AGL being present in most of the data (i.e. the dataset has more AGL values), and because it does not detract from the exercise to remove MHHW (as the exercise is not to delve deeply into the world of vertical tidal datums).  Additionally, it appears only the previous year has been recorded in mostly MHHW, so it is essentially just an omission of the latest year data.  The lack of MHHW values do not seem significant in any way (e.g. the missing values do not appear to be correlated to storm severity).  
 
@@ -132,7 +132,7 @@ stormdata <- stormdata %>%
 stormdata
 ```
 
-# Clean up Cat Pres Dead $bn
+### Clean up Cat Pres Dead $bn
 
 ```{r impact-data, warning = FALSE}
 stormdata <- stormdata %>% 
@@ -148,13 +148,13 @@ stormdata <- stormdata %>%
 stormdata
 ```
 
-#  Separate out Areas
+###  Separate out Areas
 ```{r area-data}
 stormdata <- stormdata %>%
   separate_rows(Area,sep = ", ") 
 ```
 
-# Remove columns not used in analysis and rows with NA values in important categories
+### Remove columns not used in analysis and rows with NA values in important categories
 
 ```{r clean-up-data}
 Analyze_storm_data <- stormdata %>%
@@ -164,7 +164,7 @@ Analyze_storm_data <- stormdata %>%
 print(Analyze_storm_data,n=100)
 ```
 
-# Perform Relational Analysis
+### Perform Relational Analysis
 
 After graphing various relationships between time, maxAGL, Pressure, Dead, and MinCost, most data appears not to exhibit any obvious trends.  The exception is the number Dead graphed against Minimum Cost, where it seems to have a positively correlated relationship (costs increase as number dead increases).  
 
@@ -178,7 +178,7 @@ Analyze_storm_data %>% ggplot(aes(x = startDate,y = Pressure)) + geom_point()
 Analyze_storm_data %>% ggplot(aes(x = startDate,y = MinCost)) + geom_point()
 ```
 
-# Perform Categoric Analysis
+### Perform Categoric Analysis
 
 We can look at number of named hurricanes per geographic area with the following bar chart.  However, next steps for data cleaning could be performing a better geographic categorization of the areas, as the format is inconsistent (e.g. format is shown in region of a state, state, region of the US, and even other countries outside of the US).  Instead, only a standardized format should be used, like State.  This would mean that other non-US countries should be excluded from this dataset, and an understanding of the larger categories (e.g. New England) would have to be developed.
 
@@ -233,24 +233,24 @@ df.to_csv("buffalosnow.csv",sep =';',index=False)
 
 ```
 
-## Approach
+### Approach
 
 This dataset appears to be cleaner than the storm dataset.  Some potentially problematic areas would be the use of T to indicate "Trace" and the repeated headers located in the data.  
 
-# Load Data
+### Load Data
 
 ```{r load-data2, warning = FALSE}
 buffalosnow <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 2\\buffalosnow.csv", header = TRUE, sep = ";")
 buffalosnow
 ```
 
-# Remove Repeated Headers
+### Remove Repeated Headers
 
 ```{r remove-headers-data, warning = FALSE}
 buffalosnow <- buffalosnow %>% filter(SEASON != "SEASON")
 ```
 
-# Replacements
+### Replacements
 
 Since T indicates Trace, this is effectively an unmeasureable amount of snowfall.  As such, T will be replaced by 0 in the data. There is also one value listed as 2,.5 due to a data entry error (April of the 75-76 season) - this was replaced by 2.5 based on the annual snowfall for that year minus the sum of snowfall for the other months.  NA values were dropped as the scraped table included future months.
 
@@ -271,7 +271,7 @@ pivot_longer(c(JUL,AUG,SEP,OCT,NOV,DEC,JAN,FEB,MAR,APR,MAY,JUN,ANNUAL), names_to
 buffalosnow
 ```
 
-# Perform Categoric Analysis
+### Perform Categoric Analysis
 
 ```{r analyze-snow-data-categoric}
 buffalosnow %>% filter(TimeCategory != "ANNUAL") %>% 
