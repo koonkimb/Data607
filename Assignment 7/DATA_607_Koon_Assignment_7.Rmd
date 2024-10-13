@@ -1,0 +1,79 @@
+---
+title: "Data 607 Assignment 7"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(rvest) #for html
+library(httr) #for html
+library(xml2) #for xml
+library(dplyr) #for xml
+library(jsonlite) #for json
+library(formattable)
+```
+
+### Overview / Introduction
+
+For this assignment, I created three files containing the same information on three books, "I, Who Did Not Die", "Handle with Care", and "After the Wind".  The files are in html, json, and xml format.  These files all contain the book title, subtitle, authors, and genre.  I uploaded the file into github in a publically available repository.
+
+## HTML: Import data into dataframe 
+
+I was able to load in the html file into R using the httr package, which allowed me to grab the html file from the GitHub url.  I retrieved the content as a plain text string using the content() function from the httr package, and then transformed the string into html using read_html() from the rvest package.  The rvest package also allowed me to transform the data into a dataframe.  
+
+```{r html}
+html_file_github <- "https://raw.githubusercontent.com/koonkimb/Data607/main/Assignment%207/book.html"
+
+response <- GET(html_file_github)
+html_content_github <- content(response, as = "text", encoding = "UTF-8")
+html_content <- read_html(html_content_github)
+
+
+html_df <- html_content %>%
+  html_node("table") %>%    
+  html_table(fill = TRUE)
+
+formattable(html_df)
+```
+
+## XML: Import data into dataframe 
+
+I read the XML file into R using the xml2 package.  The xml2 package also contains functions that allow me to create a dataframe with specified XML tags from the data.  
+
+```{r xml}
+xml_file <- read_xml("https://raw.githubusercontent.com/koonkimb/Data607/main/Assignment%207/book.xml")
+
+xml_content <- xml_file %>% xml_find_all("//Book")
+
+xml_df <- data.frame(
+  title = xml_text(xml_find_all(xml_content, ".//Title")),
+  subtitle = xml_text(xml_find_all(xml_content, ".//Subtitle")),
+  author = xml_text(xml_find_all(xml_content, ".//Author")),
+  genre = xml_text(xml_find_all(xml_content, ".//Genre")),
+  stringsAsFactors = FALSE
+)
+
+formattable(xml_df)
+```
+
+## JSON: Import data into dataframe 
+
+Retrieving the file and loading the data into a dataframe was the simplest with the JSON file, as I was able to do this in two lines using the jsonlite package.
+
+```{r json}
+json_file <- fromJSON("https://raw.githubusercontent.com/koonkimb/Data607/main/Assignment%207/book.json")
+
+json_df <- as.data.frame(json_file)
+
+formattable(json_df)
+```
+
+## Conclusion
+
+This assignment introduced me to various data formats that might be encountered in data acquisition.  Looking ahead to project 3, familiarity with HTML was crucial for the webscraping portion.  Specifically, understanding the tag formatting in HTML had allowed me to pull relevant links from a webpage.  Afterwards, understanding the utility of JSON files in the data cleaning step was also instrumental to our data processing, as importing the JSON and being able to use it as a data dictionary made the data much easier to read and parse. 
