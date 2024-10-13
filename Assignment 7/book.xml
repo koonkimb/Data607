@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<BookList>
+  <Book>
+    <Title>I, Who Did Not Die</Title>
+    <Subtitle>A Sweeping Story of Loss, Redemption, and Fate</Subtitle>
+    <Author>
+      <Name>Zahed Haftlang</Name>
+      <Name>Najah Aboud</Name>
+      <Name>Meredith May</Name>
+    </Author>
+    <Genre>Autobiography</Genre>
+  </Book>
+  <Book>
+    <Title>Handle with Care</Title>
+    <Subtitle></Subtitle>
+    <Author>
+      <Name>Jodi Picoult</Name>
+    </Author>
+    <Genre>Realistic Fiction</Genre>
+  </Book>
+  <Book>
+    <Title>After the Wind</Title>
+    <Subtitle>Tragedy on Everest One Survivor's Story</Subtitle>
+    <Author>
+      <Name>Lou Kasischke</Name>
+    </Author>
+    <Genre>Autobiography</Genre>
+  </Book>
+</BookList>

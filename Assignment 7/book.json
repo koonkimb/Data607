@@ -1,0 +1,30 @@
+[
+  {
+    "title": "I, Who Did Not Die",
+    "subtitle": "A Sweeping Story of Loss, Redemption, and Fate",
+    "authors": [
+        {
+            "name": "Zahed Haftlang"
+        },
+        {
+            "name": "Najah Aboud"
+        },
+        {
+            "name": "Meredith May"
+        }
+    ],
+    "genre": "Autobiography"
+  },
+  {
+    "title": "Handle with Care",
+    "subtitle": "",
+    "author": "Jodi Picoult",
+    "genre": "Realistic Fiction"
+  },
+  {
+    "title": "After the Wind",
+    "subtitle": "Tragedy on Everest One Survivor's Story",
+    "author": "Lou Kasischke",
+    "genre": "Autobiography"
+  }
+]
