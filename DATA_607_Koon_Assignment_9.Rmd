@@ -1,0 +1,42 @@
+---
+title: "Data 607 Assignment 9"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(rvest) #for html
+library(httr) #for html
+library(xml2) #for xml
+library(dplyr) #for xml
+library(jsonlite) #for json
+library(formattable)
+```
+
+### Overview / Introduction
+
+For this assignment, I chose the New York Times Books API.  I registered for an account, registered the Books API app, and retrieved my API key.  Then, I used the API to retrieve a list of current best sellers on the Combined Print and Non-Fiction category of book.  I converted it into a dataframe and can view results in a readable format with the formattable() function.
+
+
+## JSON: Import data into dataframe 
+
+I retrieved the data via the New York Times API.  Since the data was nested, I had to create the data frame by accessing each nested element before I could use formattable() to view the dataframe neatly.  
+
+```{r json}
+json_file <- fromJSON("https://api.nytimes.com/svc/books/v3/lists/current/combined-print-nonfiction.json?api-key=HesSxYBDX4fLRMyOC4eJH1WuAjQHcbX1",flatten = TRUE)
+
+best_sellers_df <- json_file$results
+books_df <- best_sellers_df$books
+
+formattable(books_df)
+```
+
+## Conclusion
+
+This assignment serves as an introduction for using API calls to retrieve data.  It's great that the New York Times has an easily accessible API that can be used for testing out API calls.  I played around with the different calls and found the book list categories using the documentation referring to the API endpoint /lists/names.json.  Afterwards, I read the documentation on the API endpoint /lists/{date}/{list}.json, to retrieve the list of best sellers for a chosen category.  It would have been fast and convenient if there was an open source API available to retrieve the LinkedIn Learning course catalog from project 3, but unfortunately the API was only available for enterprise customers and I had to resort to web scraping instead.  

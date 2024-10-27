@@ -1,0 +1,137 @@
+"Women's Leadership"
+A/B Testing
+ABAP
+Accounts Payable (AP)
+AEC
+Algorithmic Trading
+ArcGIS Pro
+ArcGIS Products
+ASP.NET Core
+Balanced Scorecard
+Banking
+Behavioral Interviewing
+BRF
+CLI
+Cloud Security
+Code Interpretation
+Code Review
+Coding Practices
+Customer Analysis
+Customer Experience
+Customer Experience Management
+Customer Insight
+Customer Research
+DASH
+Dashboards
+Data Literacy
+Data Loading
+Data Modeling
+Data Reduction
+Data Science
+Databricks Products
+DAX
+Decentralized Applications (DApps)
+Decision-Making
+Department Development
+Development of Strategy
+DevOps
+Digitization
+Due Diligence
+Enterprise Resource Planning (ERP)
+Entertainment Industry
+Entrepreneurship
+Equity
+Estate Planning
+Ethereum
+Ethical Hacking
+Executive Presentation Skills
+Gender Equality
+General Data Protection Regulation (GDPR)
+Generative AI
+Geological Mapping
+ggplot
+Go (Programming Language)
+Government Regulations
+Healthcare Industry
+Human Capital Management
+Inclusion and Belonging (DEIB)
+Key Metrics
+Key Performance Indicators
+LangChain
+Looker (Software)
+Machine Learning
+Manufacturing
+Map 3D
+MapGuide
+Market Segmentation
+Mathematica
+Metadata
+Microsoft Azure Machine Learning
+Microsoft Graph
+Microsoft Power Pages
+Microsoft Power Platform
+Microsoft Power Virtual Agents
+Microsoft PowerPoint
+Microsoft Teams
+MLOps
+Model Training
+NIST
+Organizational Culture
+Pay Equity
+Payment Card Industry Data Security Standard (PCI DSS)
+Personal Data Protection
+PHP
+Pivot Tables
+PowerPivot
+Pricing Analysis
+Product Design
+Product Management
+Product Marketing
+Product Research
+Program Design
+Program Development
+Programming
+Project Engineering
+Public Health
+Quality Assurance
+Quantitative Analytics
+Rapid Application Development (RAD)
+Recruiting
+Regression Analysis
+Resume Writing
+RStudio
+SAP FI
+SAP Fiori
+SAP Products
+SAP S/4HANA
+SAP Successfactors
+SAS (Programming Language)
+Scalable Web Applications
+Scientific Computing
+Scripting
+Search Engine Optimization (SEO)
+Sentinel
+SharePoint
+Smart Contracts
+Soft Skills
+Software Deployment
+Splunk
+Sports Analytics
+Sports Management
+SQL database design
+Statistics
+Strategic Communications
+Strategic Thinking
+Talent Management
+Tech Career Skills
+Transform
+U.S. Health Insurance Portability and Accountability Act (HIPAA)
+Unstructured Data
+Urban Planning
+V Lookups
+Venture Capital
+Virtual Reality (VR)
+Visual Storytelling
+Web Analytics
+Web Development
+Wolfram Language

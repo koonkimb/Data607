@@ -1,0 +1,138 @@
+ABAP
+Adobe Analytics
+Adobe Creative Cloud
+Alteryx
+Amazon QuickSight
+Amazon Redshift
+Amazon Web Services (AWS)
+Analytics
+Apache Airflow
+Apache Flink
+Apache Kafka
+Apache Spark
+API Development
+Application Development
+ArcGIS Pro
+ArcGIS Products
+ASP.NET Core
+AutoCAD
+Autodesk InfraWorks
+Azure Cosmos DB
+Azure Data Factory
+Azure Data Lake
+Azure Databricks
+Azure Key Vault
+Azure SQL
+BRF
+C#
+C++
+Canva
+Cassandra
+ChatGPT
+CLI
+D3.js
+DASH
+Data Build Tool (DBT)
+Data Lakes
+Databricks Products
+DAX
+Decentralized Applications (DApps)
+Deep Learning
+Digital Marketing Analytics
+Elastic Stack (ELK)
+Elasticsearch
+Excel Dashboards
+Excel Modeling
+FME
+GitHub
+Go (Programming Language)
+Google Analytics
+Google BigQuery
+Google Cloud Dataflow
+Google Cloud Platform (GCP)
+Google Data Studio
+Hadoop
+Hive
+InfluxDB
+Java
+JavaScript
+Knime
+Kubernetes
+LinkedIn
+Looker (Software)
+Mathematica
+MATLAB
+Matplotlib
+Microsoft 365
+Microsoft Azure
+Microsoft Azure Machine Learning
+Microsoft Copilot
+Microsoft Development
+Microsoft Dynamics 365
+Microsoft Excel
+Microsoft Fabric
+Microsoft Graph
+Microsoft Power Apps
+Microsoft Power Automate
+Microsoft Power BI
+Microsoft Power Pages
+Microsoft Power Platform
+Microsoft Power Query
+Microsoft Power Virtual Agents
+Microsoft PowerPoint
+Microsoft Project
+Microsoft SQL Server
+Microsoft Teams
+Minitab
+MongoDB
+MySQL
+Node-RED
+NoSQL
+NumPy
+OpenAI API
+OpenAI Products
+Oracle Cloud
+Oracle Database
+Pandas (Software)
+Panel Data Analysis
+PHP
+Plotly
+PostgreSQL
+PowerPivot
+PySpark
+Python (Programming Language)
+Qlik Sense
+R (Programming Language)
+R Shiny
+RStudio
+Rust (Programming Language)
+SAP Analytics Cloud
+SAP BI
+SAP BPC
+SAP Business Warehouse (SAP BW)
+SAP ERP
+SAP FI
+SAP Fiori
+SAP Products
+SAP S/4HANA
+SAP SuccessFactors
+SAS (Programming Language)
+SAS (Software)
+Seaborn
+Snowflake
+Splunk
+SPSS Statistics
+SQL
+SQL Server Analysis Services (SSAS)
+Stata
+Tableau
+tidyverse
+Transact-SQL (T-SQL)
+Unreal Engine
+V Lookups
+Visio
+Wavelets
+Wolfram Language
+ggplot
+LangChain
+GPT-4

@@ -2,10 +2,11 @@ import pandas as pd
 import json
 
 
-topics = ["Artificial-Intelligence-Foundations","Generative-AI","Machine-Learning","Natural-Language-Processing-nlp","Neural-Networks-and-Deep-Learning",
-          "Data-Analysis","Data-Visualization","Business-Intelligence","Tech-Career-Skills","Data-Engineering",
-          "Database-Development","Database-Administration","Data-Resource-Management","Data-Centers"]
- 
+##topics = ["Artificial-Intelligence-Foundations","Generative-AI","Machine-Learning","Natural-Language-Processing-nlp","Neural-Networks-and-Deep-Learning",
+##          "Data-Analysis","Data-Visualization","Business-Intelligence","Tech-Career-Skills","Data-Engineering",
+##          "Database-Development","Database-Administration","Data-Resource-Management","Data-Centers"]
+##
+topics = ["Data-Science"]
 for topic in topics:
     csv_name = topic + "_json.csv"
 # Read the CSV file into a DataFrame

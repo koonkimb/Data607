@@ -1,0 +1,508 @@
+---
+title: "Data 624 Assignment 4"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages  
+
+```{r load-packages, message=FALSE}
+library(fpp3)
+library(RColorBrewer)
+library(seasonal)
+library(mlbench)
+library(fmsb)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(zoo)
+```
+
+### Instructions
+
+Do problems 3.1 and 3.2 in the Kuhn and Johnson book Applied Predictive Modeling. 
+
+### Data import and transformation
+
+
+```{r, message=FALSE, warnings=FALSE}
+LL_Data_Science <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\DATA607_project_3\\data\\raw\\Data-Science_data.csv", header = TRUE, sep = ";")
+LL_Data_Science <- LL_Data_Science %>% rename(Topic = X0, Title = X1, Published = X2, Viewership = X3, Description = X4, Skills = X5)
+LL_Data_Science$Skills <- substr(LL_Data_Science$Skills, 2, nchar(LL_Data_Science$Skills) - 1)
+LL_Data_Science <- separate_rows(LL_Data_Science, Skills, sep = ",")
+LL_Data_Science$Skills <- gsub("^'|'$", "", trimws(LL_Data_Science$Skills))
+
+LL_Data_Science <- LL_Data_Science %>% 
+  mutate(Published = as.Date(Published)) %>% 
+  mutate(active_days = as.numeric(as.Date("2024-10-16")-Published)) %>% 
+  mutate(Avg_Daily_Viewership = Viewership/active_days) %>%
+  mutate(YearMonth = as.yearmon(Published))
+
+LL_Artificial_Intelligence <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\DATA607_project_3\\data\\raw\\Artificial-Intelligence_Data.csv", header = TRUE, sep = ";")
+LL_Artificial_Intelligence <- LL_Artificial_Intelligence %>% rename(Topic = X0, Title = X1, Published = X2, Viewership = X3, Description = X4, Skills = X5)
+LL_Artificial_Intelligence$Skills <- substr(LL_Artificial_Intelligence$Skills, 2, nchar(LL_Artificial_Intelligence$Skills) - 1)
+LL_Artificial_Intelligence <- separate_rows(LL_Artificial_Intelligence, Skills, sep = ",")
+LL_Artificial_Intelligence$Skills <- gsub("^'|'$", "", trimws(LL_Artificial_Intelligence$Skills))
+
+LL_Artificial_Intelligence <- LL_Artificial_Intelligence %>% 
+  mutate(Published = as.Date(Published)) %>% 
+  mutate(active_days = as.numeric(as.Date("2024-10-16")-Published)) %>% 
+  mutate(Avg_Daily_Viewership = Viewership/active_days) %>%
+  mutate(YearMonth = as.yearmon(Published))
+
+full_LL_dataset <- rbind(LL_Data_Science,LL_Artificial_Intelligence) 
+full_LL_dataset_onet_mapped <- full_LL_dataset %>% distinct(Title, Published, Skills, .keep_all = TRUE) %>%   
+  mutate(skills_onet = case_when(
+    Skills == "R (Programming Language)"      ~ "R",
+    Skills == "Python (Programming Language)" ~ "Python",
+    Skills == "GitHub"   ~ "Git",
+    Skills == "Amazon Web Services (AWS)"    ~ "AWS",
+    Skills == "Apache Spark"    ~ "Spark",
+    Skills == "Excel Dashboards"      ~ "Excel",
+    Skills == "Excel Modeling"      ~ "Excel",
+    Skills == "Microsoft Excel"      ~ "Excel",
+    Skills == "Pandas (Software)" ~ "Pandas",
+    Skills == "Scikit-Learn"   ~ "Scikit-learn",
+    Skills == "SAS (Programming Language)"   ~ "SAS",
+    Skills == "SQL"    ~ "SQL",
+    Skills == "Hadoop"    ~ "Hadoop",
+    Skills == "NoSQL"    ~ "NoSQL",
+    Skills == "TensorFlow"    ~ "TensorFlow"
+  )) %>% na.omit()
+
+SkillCount_onet_mapped <- full_LL_dataset_onet_mapped %>% group_by(skills_onet) %>% summarize(count = n())
+SkillCountSum_onet_mapped <- full_LL_dataset_onet_mapped %>% group_by(skills_onet) %>% summarize(avg_total_daily_viewership = sum(Viewership)/sum(active_days), total_viewership = sum(Viewership)) 
+SkillBinnedDates_onet_mapped <- full_LL_dataset_onet_mapped %>% group_by(YearMonth,skills_onet) %>% summarize(total_avg_daily_viewership = sum(Avg_Daily_Viewership), .groups = 'drop') 
+
+SkillCountSum_onet_mapped %>% 
+  ggplot(aes(x = avg_total_daily_viewership, y = reorder(skills_onet,avg_total_daily_viewership), fill = skills_onet)) + geom_bar(stat= "identity") +
+  scale_fill_manual(
+    values = tech_colors
+  ) +
+    guides(fill = "none") + 
+  theme_minimal()
+
+SkillCountSum_onet_mapped %>% 
+  ggplot(aes(x = total_viewership, y = reorder(skills_onet,total_viewership), fill = skills_onet)) + geom_bar(stat= "identity") +
+    scale_fill_manual(
+    values = tech_colors
+  ) +
+  guides(fill = "none") + 
+  theme_minimal()
+
+
+SkillBinnedDates_onet_mapped %>% group_by(YearMonth,skills_onet) %>% summarize(count = n(), .groups = 'drop') %>% group_by(skills_onet) %>% mutate(ccount = cumsum(count)) %>% ggplot(aes(x = YearMonth, y = ccount, color = skills_onet)) + geom_point(size = 2) + geom_line() +
+    scale_color_manual(
+    values = tech_colors)
+
+
+full_LL_dataset %>% distinct(Title, Published, Skills, .keep_all = TRUE) %>% filter(Skills %in% onet_tech_skills) %>% distinct(Skills)
+
+write.table(LL_Artificial_Intelligence, "C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 3\\LL_Artificial_Intelligence.csv", sep = ';;', quote = FALSE, row.names = FALSE)
+
+LL_Complete <- inner_join(LL_Data_Science,LL_Skills_Cat, by = "Skills") 
+
+LL_Skills_Cat <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\DATA607_project_3\\data\\raw\\Skills_Cat.csv", header = TRUE)
+
+tech_colors <- c(
+  "R" = "#8AB17D", 
+  "Python" = "#4A7A8C", 
+  "Git" = "#E7B16C", 
+  "AWS" = "#D9421C", 
+  "NoSQL" = "#E9C46A", 
+  "SAS" = "#BABB74", 
+  "Spark" = "#F4A261", 
+  "Hadoop" = "#E76F51", 
+  "Excel" = "#264653", 
+  "SQL" = "#2A9D8F", 
+  "pandas" = "#47856A", 
+  "Scikit-learn" = "#864653", 
+  "TensorFlow" = "#99756F"
+) 
+
+onet_tech_skills <- c(
+  "R","Python","Git","AWS","NoSQL", "SAS", "Spark","Hadoop","Excel","SQL","pandas","Scikit-learn","TensorFlow"
+)
+
+
+SkillCount <- LL_Complete %>% filter(Skill_Type == 'SOFTWARE') %>% group_by(Skills) %>% summarize(count = n())
+SkillCountSum <- LL_Complete %>% filter(Skill_Type == 'SOFTWARE') %>% group_by(Skills) %>% summarize(avg_total_daily_viewership = sum(Viewership)/sum(active_days), total_viewership = sum(Viewership)) 
+SkillBinnedDates <- LL_Complete %>% filter(Skill_Type == 'SOFTWARE') %>% group_by(YearMonth,Skills) %>% summarize(total_avg_daily_viewership = sum(Avg_Daily_Viewership), .groups = 'drop') 
+SkillBinnedDates$Skills <- factor(SkillBinnedDates$Skills)
+
+write.csv(DistinctSkills, "C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 3\\DistinctSkills.csv")
+write.table(LL_Data_Science, "C:\\Users\\Kim\\Documents\\GitHub\\Data607\\Project 3\\LL_Data_Science.csv", sep = ';;', quote = FALSE, row.names = FALSE)
+
+SkillCount <- SkillCount %>%
+  arrange(desc(count)) 
+
+SkillCount %>% slice_max(order_by = count, n = 20) %>% ggplot(aes(x = count, y = reorder(Skills,count), fill = count)) + geom_bar(stat= "identity") 
+
+SkillCountSum %>% slice_max(order_by = avg_total_daily_viewership, n = 20) %>% 
+  ggplot(aes(x = avg_total_daily_viewership, y = reorder(Skills,avg_total_daily_viewership), fill = avg_total_daily_viewership)) + geom_bar(stat= "identity") 
+
+SkillCountSum %>% slice_max(order_by = total_viewership, n = 20) %>% 
+  ggplot(aes(x = total_viewership, y = reorder(Skills,total_viewership), fill = total_viewership)) + geom_bar(stat= "identity") 
+greatest_Total_Viewership <- SkillCountSum %>% slice_max(order_by = total_viewership, n = 10) %>% distinct(Skills)
+
+
+SkillBinnedDates %>% filter(Skills %in% greatest_Total_Viewership$Skills) %>% group_by(YearMonth,Skills) %>% summarize(count = n(), .groups = 'drop') %>% group_by(Skills) %>% mutate(ccount = cumsum(count)) %>% ggplot(aes(x = YearMonth, y = ccount,color = Skills)) + geom_line()
+```
+
+a.  Using visualizations, explore the predictor variables to understand their distributions as well as the relationships between predictors.
+
+To explore the predictor values, I first averaged the predictors based on Glass type and then plotted them on radarcharts to visualize the average composition. 
+
+I first created an overall dataframe format, which created dataframe containing the max and min values for each column.  This is the same for all of the Glass plots, so that they are viewable on the same scale.  
+```{r, message=FALSE, warnings=FALSE}
+library(tidyverse)
+library(curl)
+
+
+load_txt_file <- function(url){
+
+tmp <- tempfile()
+  
+curl_download(url, tmp)
+
+df <- read_tsv(tmp, show_col_types = FALSE)
+  
+return(df)
+}
+
+knowledge_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Knowledge.txt"
+abilities_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Abilities.txt"
+skills_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Skills.txt"
+education_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Education%2C%20Training%2C%20and%20Experience.txt"
+tech_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Technology%20Skills.txt"
+activities_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Work%20Activities.txt"
+alt_titles_url <- "https://www.onetcenter.org/dl_files/database/db_29_0_text/Alternate%20Titles.txt"
+
+knowledge_df <- load_txt_file(knowledge_url)
+abilities_df <- load_txt_file(abilities_url)
+skills_df <- load_txt_file(skills_url)
+education_df <- load_txt_file(education_url)
+tech_df <- load_txt_file(tech_url)
+activities_df <- load_txt_file(activities_url)
+alt_titles_df <- load_txt_file(alt_titles_url)
+
+tech_df %>% distinct(`Example`)
+```
+
+The following is a radarchart for Glass type 1.  
+```{r, message=FALSE, warnings=FALSE}
+Glass1_df <- Glass_df
+Glass1 <- Glass %>% filter(Type == 1) %>% select(-c(Type)) %>% colMeans()
+Glass1
+Glass1_df <- rbind(Glass1_df, Glass1)
+radarchart(Glass1_df, axistype=1 , 
+    #custom polygon
+    pcol=rgb(0.8,0.0,0.0,0.9) , pfcol=rgb(0.8,0.0,0.0,0.5) , plwd=2 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+```
+
+```{r, message=FALSE, warnings=FALSE}
+Glass2_df <- Glass_df
+Glass2 <- Glass %>% filter(Type == 2) %>% select(-c(Type)) %>% colMeans()
+Glass2
+Glass2_df <- rbind(Glass2_df, Glass2)
+radarchart(Glass2_df, axistype=1 , 
+    #custom polygon
+    pcol=rgb(0.8,0.2,0.0,0.9) , pfcol=rgb(0.8,0.2,0.0,0.5) , plwd=2 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+```
+
+```{r, message=FALSE, warnings=FALSE}
+Glass3_df <- Glass_df
+Glass3 <- Glass %>% filter(Type == 3) %>% select(-c(Type)) %>% colMeans()
+Glass3
+Glass3_df <- rbind(Glass3_df, Glass3)
+radarchart(Glass3_df, axistype=1 , 
+    #custom polygon
+    pcol=rgb(0.8,0.5,0.0,0.9) , pfcol=rgb(0.8,0.5,0.0,0.5) , plwd=2 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+```
+
+```{r, message=FALSE, warnings=FALSE}
+Glass5_df <- Glass_df
+Glass5 <- Glass %>% filter(Type == 5) %>% select(-c(Type)) %>% colMeans()
+Glass5
+Glass5_df <- rbind(Glass5_df, Glass5)
+radarchart(Glass5_df, axistype=1 , 
+    #custom polygon
+    pcol=rgb(0.5,0.5,0.0,0.9) , pfcol=rgb(0.5,0.5,0.0,0.5) , plwd=2 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+```
+
+```{r, message=FALSE, warnings=FALSE}
+Glass6_df <- Glass_df
+Glass6 <- Glass %>% filter(Type == 6) %>% select(-c(Type)) %>% colMeans()
+Glass6
+Glass6_df <- rbind(Glass6_df, Glass6)
+radarchart(Glass6_df, axistype=1 , 
+    #custom polygon
+    pcol=rgb(0.0,0.5,0.5,0.9) , pfcol=rgb(0.0,0.5,0.5,0.5) , plwd=2 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+```
+
+```{r, message=FALSE, warnings=FALSE}
+Glass7_df <- Glass_df
+Glass7 <- Glass %>% filter(Type == 7) %>% select(-c(Type)) %>% colMeans()
+Glass7
+Glass7_df <- rbind(Glass7_df, Glass7)
+radarchart(Glass7_df, axistype=1 , 
+    #custom polygon
+    pcol=rgb(0.0,0.0,0.8,0.9) , pfcol=rgb(0.0,0.0,0.8,0.5) , plwd=2 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+
+```
+
+Since Type 1, 2, and 3 Glass appear very close in average composition, I changed the scale while taking into account only the min and max values of these glass types to more easily distinguish between them.  I also overlaid them on the radarchart for ease of comparison.  
+```{r, message=FALSE, warnings=FALSE}
+
+Glass_123 <- Glass %>% filter(Type == 1|Type == 2|Type == 3) 
+maxval <- apply(Glass_123,2,max) #find max values
+minval <- apply(Glass_123,2,min) #find min values
+
+max_row1 <- data.frame(
+  RI = 1.54, Na = 15, Mg = 5, Al = 2.2, 
+  Si = 76, K = 2, Ca = 17, Ba = 4, Fe = .6)
+min_row1 <- data.frame(
+  RI = 1.51, Na = 10.5, Mg = 0, Al = 0.2, 
+  Si = 69, K = 0, Ca = 7, Ba = 0, Fe = 0)
+
+Glass_df1 <- data.frame(
+  RI = numeric(0), Na = numeric(0), Mg = numeric(0), Al = numeric(0), 
+  Si = numeric(0), K = numeric(0), Ca = numeric(0), Ba = numeric(0), Fe = numeric(0))
+Glass_df1 <- rbind(Glass_df1, max_row1)
+Glass_df1 <- rbind(Glass_df1, min_row1)
+Glass_df1 <- rbind(Glass_df1,Glass1)
+Glass_df1 <- rbind(Glass_df1,Glass2)
+Glass_df1 <- rbind(Glass_df1,Glass3)
+colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+colors_in=c( rgb(0.2,0.5,0.5,0.3), rgb(0.8,0.2,0.5,0.3) , rgb(0.7,0.5,0.1,0.3) )
+radarchart(Glass_df1, axistype=1 , 
+    #custom polygon
+    pcol=colors_border , pfcol=colors_in , plwd=2 , plty=1,
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    )
+
+legend(x=1.5, y=1, legend = c("Type 1","Type 2","Type 3"), bty = "n", pch=20 , col=colors_in , text.col = "grey", cex=1.2, pt.cex=3)
+```
+
+I also plotted Glass types 5, 6, and 7 together on one radarchart, though the scales from the original plots remained the same.  
+
+```{r, message=FALSE, warnings=FALSE}
+
+Glass_df2 <- Glass_df
+Glass_df2 <- rbind(Glass_df2,Glass5)
+Glass_df2 <- rbind(Glass_df2,Glass6)
+Glass_df2 <- rbind(Glass_df2,Glass7)
+colors_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+colors_in=c( rgb(0.2,0.5,0.5,0.3), rgb(0.8,0.2,0.5,0.3) , rgb(0.7,0.5,0.1,0.3) )
+radarchart(Glass_df2, axistype=1 , 
+    #custom polygon
+    pcol=colors_border , pfcol=colors_in , plwd=2 , plty=1,
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    ) 
+
+legend(x=1.5, y=1, legend = c("Type 5","Type 6","Type 7"), 
+       bty = "n", pch=20 , col=colors_in , text.col = "grey", cex=1.2, pt.cex=3)
+```
+
+b.  Do there appear to be any outliers in the data? Are any predictors skewed?
+
+The following graphs show the distribution of values for each property, grouped by glass type.  
+
+For Glass Type 1, the boxplots show that Al composition is slightly left skewed.  Ba composition is centered on 0%, although it appears that the existence of Ba in the glass sample does not preclude it from classification into Type 1, given that there are samples with Ba included.  Fe composition is centered on 0 as well, although it has a greater variance than Ba.  Fe composition is also skewed right.  K composition is skewed left with no outliers.  Mg composition is not skewed although it has multiple outliers.  Most samples generally fall within the approximate 3.3-3.9% range.  Na composition has very slight right skew.  Refractive Index is also skewed right.  Si composition has no outliers, and all samples fall within the 71-74% range.  There are 70 samples in the Type 1 glass group, so average composition as calculated above and graphed with the radarchart should not be incredibly affected by outliers.  
+
+```{r, message=FALSE, warnings=FALSE}
+Glass1 <- Glass %>% filter(Type == 1) %>% mutate(sampleID = row_number())
+Glass1 <- Glass1 %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass1 %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+```
+
+
+For Glass Type 2, there are more outliers in general than in Glass Type 1.  All plots show many (4+) outliers except for Fe composition.  Al exhibits slight left skew.  Ba is centered on 0, with right skew; there is 1 extreme outlier at 3%+.  Ca is right skewed, much more so than with Type 1 glass.  Fe composition is again centered on 0, with right skew.  K composition exhibits left skew, with many outliers in the 0-0.3% range.  Mg also exhibits left skew, although most samples fall within the 2.25-4% range.  Na is mostly unskewed though with outliers on both ends.  Refractive Index is right skewed, with many outliers like with the Ca plot.  Si is slightly left skewed.  Like Type 1 glass, there were 70+ samples in type 2 glass.  However, in this case, a significant percentage of the samples represent outliers.  
+```{r, message=FALSE, warnings=FALSE}
+Glass2 <- Glass %>% filter(Type == 2) %>% mutate(sampleID = row_number())
+Glass2 <- Glass2 %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass2 %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+```
+
+For Glass Type 3, there are fewer outliers in general than in Glass Type 1 and 2.  There are 9 total outliers across the 9 plots.  However, there are also only 17 samples in total, which may indicate a high percentage of outliers.  This would also explain the fewer number of outliers, as each sample has more influence in the plot.  There are no outliers for Al, Mg, and Si composition.  Ba and Fe composition are both centered on 0, with right skew.  Ba composition appears to be 0 in all samples except for 1.  
+```{r, message=FALSE, warnings=FALSE}
+Glass3 <- Glass %>% filter(Type == 3) %>% mutate(sampleID = row_number())
+Glass3 <- Glass3 %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass3 %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+```
+
+
+For Glass Type 5, there are only 13 samples, so the same discussion (from Glass Type 3) on outliers and sample influence applies.  Ba and Fe are again centered on 0.  Mg composition is also centered on 0.  All plots exhibit some level of skew, with the least skewed plots being K and Na composition.  
+```{r, message=FALSE, warnings=FALSE}
+Glass5 <- Glass %>% filter(Type == 5) %>% mutate(sampleID = row_number())
+Glass5 <- Glass5 %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass5 %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+```
+
+For Glass Type 6, there are only 9 samples.  In all samples, Ba, Fe, and K composition are 0.  Looking at the plots, one might be tempted to conclude that samples with 0 Ba, Fe, and K composition fall under Type 6 category.  However, given that there are only 9 samples and given that all other plots thus far have centered on 0 for Ba and Fe, this conclusion may be premature. 
+```{r, message=FALSE, warnings=FALSE}
+Glass6 <- Glass %>% filter(Type == 6) %>% mutate(sampleID = row_number())
+Glass6 <- Glass6 %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass6 %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+```
+Finally, for Glass Type 7, there are many outliers for Ca, Fe, K, Mg, RI, and Si. Na composition has 2 outliers while Al and Ba have none.  Unlike all other glass types, Ba composition is centered above 0, at about 0.8-0.9%.  Fe, K, and Mg composition are all centered on 0.  
+```{r, message=FALSE, warnings=FALSE}
+Glass7 <- Glass %>% filter(Type == 7) %>% mutate(sampleID = row_number())
+Glass7 <- Glass7 %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass7 %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+```
+
+Looking at the data as a whole, we can see that Ba and Fe content is generally centered on 0.  Ba and Fe are generally right skewed.  Mg is left skewed, though potentailly this is due to the various samples at 0% Mg composition from Type 7.  Na and RI exhibit some slight right skew, while Si exhibits some slight left skew.  K is also left skewed, due to the various samples with 0 and nearly 0 K composition.  Al and Ca appear nearly normal in the histoggram, but from the boxplot we can see that both have various outliers on both ends.  
+```{r, message=FALSE, warnings=FALSE}
+Glass_full <- Glass %>% 
+  pivot_longer(c(RI,Na,Mg,Al,Si,K,Ca,Ba,Fe), 
+               names_to = "Property", values_to = "value") 
+Glass_full %>% ggplot(aes(x = value)) + 
+  geom_boxplot() + facet_wrap(~ Property, scales = "free_x") 
+Glass_full %>% ggplot(aes(x = value)) + 
+  geom_histogram() + facet_wrap(~ Property, scales = "free") 
+```
+
+c.  Are there any relevant transformations of one or more predictors that might improve the classification model?
+
+All of the data is positive, as a negative composition would not make sense.  As there is a lot of fractional data between 0-1, along with skewed distributions, it may make sense to perform a log transform.
+
+## Exercise 3.2
+
+The soybean data can also be found at the UC Irvine Machine Learning Repository. Data were collected to predict disease in 683 soybeans. The 35 predictors are mostly categorical and include information on the environmental conditions (e.g., temperature, precipitation) and plant conditions (e.g., left spots, mold growth). The outcome labels consist of 19 distinct classes.
+
+The data can be loaded via:
+```{r, message=FALSE, warnings=FALSE}
+data(Soybean)
+```
+
+a. Investigate the frequency distributions for the categorical predictors. Are any of the distributions degenerate in the ways discussed earlier in this chapter?
+
+Degenerate distributions have only one possible value.  From the below graph, we can see that no category has only one possible value.  However, there are multiple categories that are close to having only one possible value, such as mycelium and sclerotia.  Lodging, shriveling, leaf.malf, and leaf.mild also heavily favor a single value, though not as extreme as mycelium and schlerotia.  
+```{r, message=FALSE, warnings=FALSE}
+
+Soybean_full <- Soybean %>% mutate(across(
+  c(date,plant.stand,precip,temp,hail,crop.hist,area.dam,sever,seed.tmt,
+    germ,plant.growth,leaves,leaf.halo,leaf.marg,leaf.size,leaf.shread,
+    leaf.malf,leaf.mild,stem,lodging,stem.cankers,canker.lesion,
+    fruiting.bodies,ext.decay,mycelium,int.discolor,sclerotia,fruit.pods,
+    fruit.spots,seed,mold.growth,seed.discolor,seed.size,shriveling,roots), ~ as.numeric(.))) %>% 
+  mutate(sampleid = row_number()) #was not able to pivot longer unless convert to numeric
+
+Soybean_full <- Soybean_full %>% 
+  pivot_longer(c(date,plant.stand,precip,temp,hail,crop.hist,
+                 area.dam,sever,seed.tmt,germ,plant.growth,leaves,
+                 leaf.halo,leaf.marg,leaf.size,leaf.shread,
+                 leaf.malf,leaf.mild,stem,lodging,stem.cankers,
+                 canker.lesion,fruiting.bodies,ext.decay,mycelium,
+                 int.discolor,sclerotia,fruit.pods,fruit.spots,seed
+                 ,mold.growth,seed.discolor,seed.size,shriveling,roots), 
+               names_to = "Property", values_to = "value")
+# Soybean_full$value <- as.factor(Soybean_full$value) Saving the NA analysis for the next graph
+
+Soybean_full %>% ggplot(aes(x = value)) + geom_bar() + facet_wrap(~ Property, scales = "free_y") 
+```
+
+b.  Roughly 18 % of the data are missing. Are there particular predictors that are more likely to be missing? Is the pattern of missing data related to the classes?
+
+Germ, seed.tmt, sever, and fruit.spots appear to have the highest percentage of missing values.
+```{r, message=FALSE, warnings=FALSE}
+Soybean_Summary <- Soybean_full %>% group_by(Property, value) %>% count()
+Soybean_Summary$value <- as.factor(Soybean_Summary$value)
+Soybean_Summary %>% ggplot(aes(x = value, y = n, fill = value)) + geom_bar(stat= "identity") +
+  facet_wrap(~ Property, scales = "free_y") 
+
+Soybean_Percentages <- Soybean_full %>% group_by(Property, value) %>% count()
+Soybean_Percentages <- Soybean_Percentages %>% group_by(Property) %>% 
+  mutate(total = sum(n)) %>% 
+  mutate(percentage = 100 * n/total)
+Soybean_Percentages$value <- as.factor(Soybean_Percentages$value)
+Soybean_Percentages %>% 
+  ggplot(aes(x = value, y = percentage, fill = value)) + geom_bar(stat= "identity") +
+  facet_wrap(~ Property, scales = "free_y") 
+```
+
+The pattern of missing data does appear related to class, with 2-4-d-injury, cyst-nematode, diaporthe-pod-&-stem-blight, herbicide-injury, and phytophthora-rot having the highest percentage of NA values.
+```{r, message=FALSE, warnings=FALSE}
+Soybean_Summary <- Soybean_full %>% group_by(Class,value) %>% count()
+Soybean_Summary$value <- as.factor(Soybean_Summary$value)
+Soybean_Summary %>% filter(is.na(value)) %>% ggplot(aes(x = Class, y = n, fill = Class)) + geom_bar(stat= "identity") 
+```
+
+c. Develop a strategy for handling missing data, either by eliminating predictors or imputation.
+```{r, message=FALSE, warnings=FALSE}
+columns <- c("2-4-d-injury","cyst-nematode","diaporthe-pod-&-stem-blight","herbicide-injury","phytophthora-rot")
+Soybean_full %>% group_by(Class) %>% count() %>% mutate(total_samples = n/35) %>% filter(Class %in% columns)
+```
+
+Missing data is isolated to the five classes stated above.  
+
+For 2-4-d-injury, the following predictors are all NA across this class. 
+
+```{r, message=FALSE, warnings=FALSE}
+Soybean_full %>% group_by(Class,Property,value) %>% count() %>% filter(is.na(value) & n == 16 , Class == "2-4-d-injury") 
+```
+
+For cyst-nematode, the following predictors are all NA across this class. 
+```{r, message=FALSE, warnings=FALSE}
+Soybean_full %>% group_by(Class,Property,value) %>% count() %>% filter(is.na(value) & n == 14, Class == "cyst-nematode") 
+```
+
+For diaporthe-pod-&-stem-blight, the following predictors are all NA across this class. 
+```{r, message=FALSE, warnings=FALSE}
+Soybean_full %>% group_by(Class,Property,value) %>% count() %>% filter(is.na(value) & n == 15, Class == "diaporthe-pod-&-stem-blight") 
+```
+
+For herbicide-injury, the following predictors are all NA across this class. 
+```{r, message=FALSE, warnings=FALSE}
+Soybean_full %>% group_by(Class,Property,value) %>% count() %>% filter(is.na(value) & n == 8, Class == "herbicide-injury")  
+```
+
+For phytophthora-rot, there are no predictors that are missing across the entire class.
+```{r, message=FALSE, warnings=FALSE}
+Soybean_full %>% group_by(Class,Property,value) %>% count() %>% filter(is.na(value) & n == 88, Class == "phytophthora-rot") 
+```
+
+For 2-4-d-injury, cyst-nematode, and herbicide-injury, as there are many (>=20) predictors missing and an already small sample set, I would propose to remove these classes entirely.  This is because over 50% of the predictors would be missing complete, making it difficult to interpolate missing values.  For the Phytophtora-rot class, no predictors are missing in its entirety.  As such, it may be possible to imputate these values.  One way to do this would be by using a simple replacement for mean/median within their own class.  Alternatively, a more calculated approach may employ K Nearest Neighbor imputation by determining its correlation with other features and then interpolating based on these populated values.  
