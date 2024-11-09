@@ -18,22 +18,26 @@ options(scipen=999)
 
 ### Overview / Introduction
 
-When creating outputs in SQL, I find myself using functions such as rank() over partition() and case when/then/end very frequently.  In this vignette, I will describe equivalents in tidyverse, using a Civil Engineering Salary survey sourced from the Civil Engineering subreddit.  
+When creating outputs in SQL, I find myself using functions such as rank() over partition() and case when/then/end very frequently.  In this vignette, I will describe equivalents in tidyverse, using a Civil Engineering Salary survey sourced from the Civil Engineering subreddit.  The raw data can be found from the same github link below, and the pared down data can be downloaded from: 
 
-Imagine two scenarios where we would want to determine the highest reported salary by State, and determine whether a reported salary is lower or higher than the State average.  For scenario 2, since the dataset has over 2000 records, I will return only results from New York.
+https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/TidyVerse%20CREATE/CE_Salary.csv.  
+
+To reproduce the SQL portion of this assignment, data will need to be downloaded from the above link and the file path will need to be changed in SSMS to the local directory in which the above raw data is saved.  
 
 ## Load/Transform Data
 
 After importing the data, I filter on select columns of interest and rename the columns to be less verbose.  I also export this table into a CSV file for later use in SQL server when looking at SQL equivalents.
 
 ```{r load-data}
-CE_Salary <- read.csv("C:\\Users\\Kim\\Documents\\GitHub\\Data607\\TidyVerse CREATE\\2023_CE_Salary_Survey.csv", header = TRUE, sep = ",")
+CE_Salary <- read.csv("https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/TidyVerse%20CREATE/2023_CE_Salary_Survey.csv", header = TRUE, sep = ",")
 CE_Salary <- CE_Salary %>% filter(Please.select.your.country. == 'United States of America') %>% select(What.state.do.you.work.in., Select.your.highest.level.of.education.attainment,Select.your.highest.level.of.professional.attainment..1, Which.best.describes.your.participation.in.the.Civil.Engineering.industry., Which.sub.discipline.do.you.work.in., Do.you.work.in.the.Public.or.Private.sector., What.is.your.current.annual.salary.) %>% rename(State = What.state.do.you.work.in., Education = Select.your.highest.level.of.education.attainment, Certification = Select.your.highest.level.of.professional.attainment..1, Partitipation = Which.best.describes.your.participation.in.the.Civil.Engineering.industry., Subdiscipline = Which.sub.discipline.do.you.work.in., Sector = Do.you.work.in.the.Public.or.Private.sector., Salary = What.is.your.current.annual.salary.)
 
-write.table(CE_Salary, "C:\\Users\\Kim\\Documents\\GitHub\\Data607\\TidyVerse CREATE\\CE_Salary.csv", quote = FALSE, row.names = FALSE, sep = ";")
+# write.table(CE_Salary, "C:\\Users\\Kim\\Documents\\GitHub\\Data607\\TidyVerse CREATE\\CE_Salary.csv", quote = FALSE, row.names = FALSE, sep = ";")
 ```
 
 ## SQL
+
+Imagine two scenarios where we would want to determine the highest reported salary by State, and determine whether a reported salary is lower or higher than the State average.  For scenario 2, since the dataset has over 2000 records, I will return only results from New York.
 
 To achieve the above aforementioned goals, I would use common table expressions.  I first create the CTE "stateRankedSalaries" to find the rank of each reported salary in comparison to other records for the state, sorted in descending order such that highest salaries are ranked first.  Then, I select from the CTE where the rank is equal to 1.  
 

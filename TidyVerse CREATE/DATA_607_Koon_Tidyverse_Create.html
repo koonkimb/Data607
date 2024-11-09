@@ -368,13 +368,13 @@ options(scipen=999)</code></pre>
 <p>When creating outputs in SQL, I find myself using functions such as
 rank() over partition() and case when/then/end very frequently. In this
 vignette, I will describe equivalents in tidyverse, using a Civil
-Engineering Salary survey sourced from the Civil Engineering
-subreddit.</p>
-<p>Imagine two scenarios where we would want to determine the highest
-reported salary by State, and determine whether a reported salary is
-lower or higher than the State average. For scenario 2, since the
-dataset has over 2000 records, I will return only results from New
-York.</p>
+Engineering Salary survey sourced from the Civil Engineering subreddit.
+The raw data can be found from the same github link below, and the pared
+down data can be downloaded from:</p>
+<p><a href="https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/TidyVerse%20CREATE/CE_Salary.csv" class="uri">https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/TidyVerse%20CREATE/CE_Salary.csv</a>.</p>
+<p>To reproduce the SQL portion of this assignment, data will need to be
+downloaded from the above link and the file path will need to be changed
+in SSMS to the local directory in which the above raw data is saved.</p>
 </div>
 <div id="loadtransform-data" class="section level2">
 <h2>Load/Transform Data</h2>
@@ -382,13 +382,18 @@ York.</p>
 rename the columns to be less verbose. I also export this table into a
 CSV file for later use in SQL server when looking at SQL
 equivalents.</p>
-<pre class="r"><code>CE_Salary &lt;- read.csv(&quot;C:\\Users\\Kim\\Documents\\GitHub\\Data607\\TidyVerse CREATE\\2023_CE_Salary_Survey.csv&quot;, header = TRUE, sep = &quot;,&quot;)
+<pre class="r"><code>CE_Salary &lt;- read.csv(&quot;https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/TidyVerse%20CREATE/2023_CE_Salary_Survey.csv&quot;, header = TRUE, sep = &quot;,&quot;)
 CE_Salary &lt;- CE_Salary %&gt;% filter(Please.select.your.country. == &#39;United States of America&#39;) %&gt;% select(What.state.do.you.work.in., Select.your.highest.level.of.education.attainment,Select.your.highest.level.of.professional.attainment..1, Which.best.describes.your.participation.in.the.Civil.Engineering.industry., Which.sub.discipline.do.you.work.in., Do.you.work.in.the.Public.or.Private.sector., What.is.your.current.annual.salary.) %&gt;% rename(State = What.state.do.you.work.in., Education = Select.your.highest.level.of.education.attainment, Certification = Select.your.highest.level.of.professional.attainment..1, Partitipation = Which.best.describes.your.participation.in.the.Civil.Engineering.industry., Subdiscipline = Which.sub.discipline.do.you.work.in., Sector = Do.you.work.in.the.Public.or.Private.sector., Salary = What.is.your.current.annual.salary.)
 
-write.table(CE_Salary, &quot;C:\\Users\\Kim\\Documents\\GitHub\\Data607\\TidyVerse CREATE\\CE_Salary.csv&quot;, quote = FALSE, row.names = FALSE, sep = &quot;;&quot;)</code></pre>
+# write.table(CE_Salary, &quot;C:\\Users\\Kim\\Documents\\GitHub\\Data607\\TidyVerse CREATE\\CE_Salary.csv&quot;, quote = FALSE, row.names = FALSE, sep = &quot;;&quot;)</code></pre>
 </div>
 <div id="sql" class="section level2">
 <h2>SQL</h2>
+<p>Imagine two scenarios where we would want to determine the highest
+reported salary by State, and determine whether a reported salary is
+lower or higher than the State average. For scenario 2, since the
+dataset has over 2000 records, I will return only results from New
+York.</p>
 <p>To achieve the above aforementioned goals, I would use common table
 expressions. I first create the CTE “stateRankedSalaries” to find the
 rank of each reported salary in comparison to other records for the
