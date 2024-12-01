@@ -1,0 +1,57 @@
+---
+title: "Data 607 Final Project"
+author: "Kim Koon"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(jsonlite) #for json
+library(formattable)
+```
+
+### Overview / Introduction
+
+
+
+## JSON: Import data into dataframe 
+
+
+```{r json}
+json_file <- fromJSON("https://raw.communitydragon.org/pbe/cdragon/tft/en_us.json",flatten = TRUE)
+champions_df <- as.data.frame(json_file$setData$champions[22])
+
+champions_df <- champions_df %>% filter(map(traits,1) != "NULL") %>% mutate(cost = as.character(cost))
+formattable(champions_df)
+
+Champion_Cost <- c(
+  "1" = "#afafae", 
+  "2" = "#2bb02b", 
+  "3" = "#0729cf", 
+  "4" = "#b30fbf", 
+  "5" = "#ac981a", 
+  "6" = "#c09bfa"
+) 
+
+champions_df %>% 
+champions_df_summarize <- champions_df %>% group_by(cost) %>% summarize(count = n()) 
+
+champions_df_summarize %>% 
+  ggplot(aes(x = cost, y = count, fill = cost)) + geom_bar(stat= "identity") +
+  scale_fill_manual(values = Champion_Cost) +
+  guides(fill = "none") + 
+  theme_minimal() + 
+  labs(title = "Total Champions by Cost", y = "Count", x = "Champion Cost")
+
+
+
+```
+
+## Conclusion
+
