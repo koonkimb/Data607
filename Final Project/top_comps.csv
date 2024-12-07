@@ -5,7 +5,7 @@ Blue Rebellion;14.23;Fast 8;s;['Jinx', 'Rumble', 'Illaoi', 'Zoe', 'Ekko', 'Ezrea
 Arcane Academy;14.23;Fast 8;s;['Jayce', 'Heimerdinger', 'Illaoi', 'Corki', 'Leona', 'Rumble', 'Ezreal', 'Rell', 'Irelia']
 Black Rose Rush;14.23;Fast 9;s;['Garen', 'Heimerdinger', 'LeBlanc', 'Malzahar', 'Elise', 'Nunu & Willump', 'Cassiopeia', 'Vladimir', 'Morgana']
 Black Rose Dom's;14.23;Fast 8;s;['Mordekaiser', 'Garen', 'Silco', 'LeBlanc', 'Dr. Mundo', 'Elise', 'Cassiopeia', 'Vladimir', 'Morgana']
-Kog'Scar;14.23;Level 7 Slow Roll;s;"[""Kog'Maw"", 'Scar', 'Zeri', 'Garen', 'Vander', 'Vladimir', 'Amumu', 'Darius']"
+Kog'Scar;14.23;Level 7 Slow Roll;s;['KogMaw', 'Scar', 'Zeri', 'Garen', 'Vander', 'Vladimir', 'Amumu', 'Darius']
 Fight Club;14.23;Level 5 Slow Roll;s;['Violet', 'Vi', 'Vander', 'Draven', 'Powder', 'Sevika', 'Gangplank', 'Urgot', 'Darius']
 Visionaries;14.23;Fast 8;s;['Elise', 'Heimerdinger', 'LeBlanc', 'Malzahar', 'Jayce', 'Nunu & Willump', 'Rell', 'Renata Glasc', 'Morgana']
 Arcane Comet;14.23;Level 7 Slow Roll;s;['Garen', 'Nami', 'Swain', 'LeBlanc', 'Ambessa', 'Elise', 'Tristana', 'Vladimir']
@@ -18,7 +18,7 @@ Twisted Enforcers;14.23;Level 7 Slow Roll;a;['Loris', 'Twisted Fate', 'Caitlyn',
 Rosy Rolls;14.23;Level 7 Slow Roll;a;['Blitzcrank', 'Cassiopeia', 'LeBlanc', 'Mordekaiser', 'Silco', 'Dr. Mundo', 'Vladimir', 'Ziggs', 'Morgana']
 Scrap Gods;14.23;Fast 8;a;['Rumble', 'Corki', 'Ekko', 'Jinx', 'Gangplank', 'Powder', 'Trundle', 'Illaoi', 'Tristana']
 Team Rocket;14.23;Level 6 Slow Roll;a;['Tristana', 'Rumble', 'Ambessa', 'Corki', 'Garen', 'Rell', 'Ezreal', 'Nami', 'Urgot']
-Hextech-Crystals;14.23;Default;a;"['Malzahar', 'Twitch', 'Blitzcrank', ""Kog'Maw"", 'Dr. Mundo', 'Nunu & Willump', 'Nocturne', 'Amumu']"
+Hextech-Crystals;14.23;Default;a;['Malzahar', 'Twitch', 'Blitzcrank', 'KogMaw', 'Dr. Mundo', 'Nunu & Willump', 'Nocturne', 'Amumu']
 Mad Bruisers;14.23;Level 5 Slow Roll;a;['Maddie', 'Steb', 'Trundle', 'Caitlyn', 'Elise', 'Nunu & Willump', 'Renni', 'Sett']
 Why Not Both?;14.23;Level 7 Slow Roll;a;['Gangplank', 'Swain', 'Elise', 'Jayce', 'Jayce', 'Elise', 'Gangplank', 'Swain']
 Reunion;14.23;Default;a;['Ekko', 'Vi', 'Jinx', 'Garen', 'Gangplank', 'Scar', 'Camille', 'Zeri']
