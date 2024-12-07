@@ -12,23 +12,36 @@ editor_options:
 
 ```{r load-packages, message=FALSE}
 library(tidyverse)
+library(scales)
+library(stringr)
 library(jsonlite) #for json
 library(formattable)
 ```
 
 ### Overview / Introduction
 
+Teamfight Tactics is a autochess strategy game created by Riot.  It uses characters ("champions") pulled from their more famous MOBA, League of Legends, and from their now-mainstream animated TV series Arcane.  Major updates are released every year, changing the set of champions, traits, and in-game dynamics on a regular basis.  The premise of the game is a 1v1v1v1v1v1v1v1 or 2v2v2v2 matchup where players create a team of champions to fight in maximum 40 sec rounds.  Each player has a set amount of health, and each round lost decreases player health depending on the severity of loss.  
 
+Since this is a data acquisition class, the main focus will be to scrape data to compile top comps.  Best/strongest team compositions are crowd sourced and posted on https://mobalytics.gg/tft/team-comps.  Data will be scraped using Python, Selenium, and Beautiful Soup.  Selenium will be required as the site page loads while scrolling down.  For concrete data analysis goals, I would like to determine which champion is considered the most popular by count of appearance in meta comps, categorized by cost. Champion data can be sourced from the following json file https://raw.communitydragon.org/pbe/cdragon/tft/en_us.json.  
 
-## JSON: Import data into dataframe 
+Given the popularity of Arcane, I hypothesize that champions appearing in Arcane will be the most popular, as the set has just recently been released while coinciding with Arcane's season 2 premier.  
 
+### Champion Data
 
-```{r json}
-json_file <- fromJSON("https://raw.communitydragon.org/pbe/cdragon/tft/en_us.json",flatten = TRUE)
-champions_df <- as.data.frame(json_file$setData$champions[22])
+The following JSON file was sourced from https://raw.communitydragon.org/pbe/cdragon/tft/en_us.json, a website endorsed by the Riot Developers discord server for open-source League of Legends data.  This data extends to Teamfight Tactics.  Data on champions, traits, items and more can be found in the json file linked above.  For the sake of limiting scope on this project, I focused on the champion data in this dataset.  This data was also uploaded to Github, as the data on the website changes when TFT undergoes any changes.  After extracting champion data, a list of "Arcane" champions was created manually, which indicated if a champion had appeared in the Arcane TV series.  
 
-champions_df <- champions_df %>% filter(map(traits,1) != "NULL") %>% mutate(cost = as.character(cost))
-formattable(champions_df)
+```{r}
+tft <- fromJSON("https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/Final%20Project/tft.json",flatten = TRUE)
+champions_df <- as.data.frame(tft$setData$champions[22])
+arcane_champions = c('Ambessa','Caitlyn','Ekko','Heimerdinger','Jayce','Jinx','Loris','Maddie','Mel','Powder','Renni','Scar','Sevika','Silco','Singed','Smeech','Steb','Vander','Vi','Viktor','Violet','Warwick')
+```
+
+Color scheme was designated for data visualization going forward.
+```{r color designations}
+arcane_champion_colors <- c(
+  "Arcane Champion" = "#3eb6f2",
+  "Non-Arcane Champion" = "#e766f4"
+)
 
 Champion_Cost <- c(
   "1" = "#afafae", 
@@ -38,20 +51,185 @@ Champion_Cost <- c(
   "5" = "#ac981a", 
   "6" = "#c09bfa"
 ) 
+```
 
-champions_df %>% 
+Data was cleaned and transformed.  As a first step, champions without traits (i.e. null traits) were removed from the dataset, as they are not considered real champions in the game.  These "champions" are only characterized as champions as they take up a game board space, and for the sake of this exercise, are not relevant.  Cost was mutated from int to character, as this made color designations easier in the visualization.  A new column was added to the champion dataframe using the list of Arcane champions.  This new column designates whether the champion did or did not appear in Arcane.  
+```{r}
+champions_df <- champions_df %>% filter(map(traits,1) != "NULL") %>% mutate(cost = as.character(cost))
+champions_df <- champions_df %>% mutate(arcane_champion = case_when(name %in% arcane_champions ~ "Arcane Champion", .default = "Non-Arcane Champion"))
+formattable(champions_df)
+```
+
+Summary analysis was performed to see the breakdown of Champion costs and Arcane classification.  The breakdown of champions solely by cost shows the overall summary data.  We can see that the distribution of champions tends to favor low cost champions, while higher cost (i.e. more powerful) champions are sparser.  There is a relatively small difference between distribution of 1-4 cost champions, with a sharper decline for 5 and especially 6 cost champions.  When viewing this same breakdown, but separating the data by Arcane vs non-Arcane champion, we can see that the distribution is not the same.  For Arcane champions, most champions are in the 1 and 4 cost categories.  There is also a far less stark difference between 3-6 cost champions.  It is clear that the Arcane category has a proportionately lower number of 2 cost champions when compared to the overall data.  Looking at the non-Arcane category, we can see that the 2 cost champion category is highest.  Mathematically, this of course makes sense as Arcane champions had a proportionately lower number of 2 costs, which by default means the non-Arcane champions must have a proportionately higher number of 2 cost.  We can still observe the steep drop-off of champions distributed to higher cost champions in the non-Arcane category.  
+```{r} 
 champions_df_summarize <- champions_df %>% group_by(cost) %>% summarize(count = n()) 
+champions_df_summarize_arcane <- champions_df %>% group_by(arcane_champion) %>% summarize(count = n()) 
+champions_df$arcane_champion <- as.factor(champions_df$arcane_champion)
+champions_df$cost <- as.factor(champions_df$cost)
+champions_df_summarize_cost_arcane <- champions_df %>% group_by(cost,arcane_champion) %>% summarize(count = n()) 
 
 champions_df_summarize %>% 
   ggplot(aes(x = cost, y = count, fill = cost)) + geom_bar(stat= "identity") +
   scale_fill_manual(values = Champion_Cost) +
+  scale_y_continuous(breaks = breaks_pretty()) +
   guides(fill = "none") + 
   theme_minimal() + 
   labs(title = "Total Champions by Cost", y = "Count", x = "Champion Cost")
 
+champions_df_summarize_cost_arcane %>% 
+  ggplot(aes(x = cost, y = count, fill = cost)) + geom_bar(stat= "identity") +
+  scale_fill_manual(values = Champion_Cost) +
+  scale_y_continuous(breaks = breaks_pretty()) +
+  guides(fill = "none") + 
+  theme_minimal() + 
+  labs(title = "Cost Breakdown of Arcane vs Non-Arcane Champions", y = "Count", x = "Cost") +
+  facet_wrap(~ arcane_champion)
+```
 
+Now looking at the Arcane breakdown, we can see that Arcane champions account for about 1/3 of the total champion count.  Then, looking at the champion breakdown per cost, we can see the ratio of Arcane champions to non-Arcane champions is much higher in the higher cost tiers.  
+```{r} 
+champions_df_summarize_arcane %>% 
+  ggplot(aes(x = arcane_champion, y = count, fill = arcane_champion)) + geom_bar(stat= "identity") +
+  scale_fill_manual(values = arcane_champion_colors) +
+  scale_y_continuous(breaks = breaks_pretty()) +
+  guides(fill = "none") + 
+  theme_minimal() + 
+  labs(title = "Number of TFT Set 13 Champions Who Appeared in Arcane", y = "Count", x = "Arcane Champions")
+
+champions_df_summarize_cost_arcane %>% 
+  ggplot(aes(x = arcane_champion, y = count, fill = arcane_champion)) + geom_bar(stat= "identity") +
+  scale_fill_manual(values = arcane_champion_colors) +
+  scale_y_continuous(breaks = breaks_pretty()) +
+  guides(fill = "none") + 
+  theme_minimal() + 
+  labs(title = "Number of Arcane Champions by Champion Cost", y = "Count") +
+  facet_wrap(~ cost)
+```
+
+### Top Team Compositions 
+Top team compositions are community compiled on various websites such as mobalytics.gg.  To retrieve this data, I wrote a web scraper in Python. Each team composition was stored within a specified html tag.  From there, different composition attributes can be parsed, such as composition name, composition type, composition tier, and the champions that are in the composition. In TFT, final team comps tend to have 8-9 champions.  These champions were stored in a single column as a list.
+
+```{python, eval=FALSE, python.reticulate = FALSE}
+import re
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys   
+import requests
+import pandas as pd
+import numpy as np
+import time
+
+def get_selenium():                           
+    options = webdriver.ChromeOptions()                      
+    driver = webdriver.Chrome(options=options)
+    return (driver)
+
+driver = get_selenium()
+
+time.sleep(1)
+
+full_url = "https://mobalytics.gg/tft/team-comps"
+driver.get(full_url)
+
+scroll_pause_time = 2 # Pause between each scroll
+last_height = driver.execute_script("return document.body.scrollHeight")
+
+while True:
+# Scroll down
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(scroll_pause_time)
+
+    new_height = driver.execute_script("return document.body.scrollHeight")
+    if new_height == last_height:
+        break
+    last_height = new_height
+
+soup = BeautifulSoup(driver.page_source, "html.parser")
+
+index = 0
+
+allData = soup.find_all("div", {"class" : "m-1hi5yi4"})
+
+row = []
+champ_list = []
+data = []
+
+for i in allData:
+    comp_name = i.find("a", {"class" : "m-tyi664"})
+    row.append(comp_name.get_text())
+    comp_patch = i.find("div", {"class" : "m-ttncf1"})
+    row.append(comp_patch.get_text())
+    comp_type = comp_patch.next_sibling
+    row.append(comp_type.get_text())
+    comp_rating = i.find("img", {"class" : "m-jmopu0"})
+    row.append(comp_rating.attrs["alt"])
+    champions = i.find_all("div", {"class" : "m-1lpv2x1"})
+    for j in champions:
+        champ = j.get_text()
+        champ_list.append(champ)
+    row.append(champ_list)
+    data.append(row)
+    row = []
+    champ_list = []
+
+
+df = pd.DataFrame(data)
+
+filename = "top_comps.csv"
+df.to_csv(filename,sep =';',index=False)
+
+driver.quit()
 
 ```
 
+Data is then imported into RStudio from the CSV file created with the above code.  Individual champions must be separated out from the champion list.  Since the imported data does not treat the list of champions as a true list, I can just use regex to remove the square brackets from the data dn then split the champions with str_split based on the comma and whitespace.  I can use the unnest_wider to unnest the resulting list and then pivot_longer to transform each of the columns to its own row.  I can then extract only character, ampersand, and space values, then remove rows where champion is NA.  Finally, I remove the "name" column which contained the old column names.  Since champion order is not important for this analysis, the name column (i.e. "champion_1") gives no relevant information.
+
+```{r}
+top_comps <- read.csv("https://raw.githubusercontent.com/koonkimb/Data607/refs/heads/main/Final%20Project/top_comps.csv", header = TRUE, sep = ";")
+
+champion_columns = c("Champions_1","Champions_2","Champions_3","Champions_4","Champions_5","Champions_6","Champions_7","Champions_8","Champions_9")
+
+top_comps <- top_comps %>% 
+  rename("Name" = X0 , "Patch" = X1, "Type" = X2, "Tier" = X3,  "Champions" = X4) %>%
+  mutate(Champions = str_replace_all(Champions, "^\\[|\\]$", ""), # Remove square brackets
+              Champions = str_split(Champions, ",\\s*")) %>%
+  unnest_wider(Champions, names_sep = "_") %>%
+  pivot_longer(cols = champion_columns, values_to = "Champion") %>%
+  mutate(Champion = str_extract(Champion,"([a-zA-Z]|\\&|\\s)+")) %>%
+  filter(!is.na(Champion))%>%
+  select(-name)
+```
+
+For the data analysis, champion count within all top compositions was determined.  I also joined this data with the champion data from above, to include whether a champion is considered an Arcane or non-Arcane champion. We can see from the analysis that it does not appear Arcane champions are dominating top team compositions, and the overall breakdown of Arcane vs non-Arcane champions in these compositions is roughly the same as the overall distribution of Arcane vs non-Arcane champions.  
+```{r}
+top_comps_summarize <- top_comps %>% group_by(Champion) %>% summarize(count = n())
+top_comps_summarize <- inner_join(top_comps_summarize,champions_df, join_by(Champion==name)) %>% select(Champion, count, arcane_champion)
+```
+
+```{r fig.align="center", echo = FALSE,fig.height = 10}
+top_comps_summarize %>% 
+  ggplot(aes(x = count, y = reorder(Champion,count), fill = arcane_champion)) + geom_bar(stat= "identity") +
+  scale_fill_manual(values = arcane_champion_colors) +
+  guides(fill = "none") + 
+  theme_minimal() + 
+  labs(title = "Number of Appearances in Top Team Compositions", y = "Champions", x = "Appearances")
+```
+
+```{r}
+top_comps_summarize_by_arcane <- top_comps_summarize %>% group_by(arcane_champion) %>% summarize(sum = sum(count))
+
+top_comps_summarize_by_arcane %>% 
+  ggplot(aes(x = arcane_champion, y = sum, fill = arcane_champion)) + geom_bar(stat= "identity") +
+  scale_fill_manual(values = arcane_champion_colors) +
+  guides(fill = "none") + 
+  theme_minimal() + 
+  labs(title = "Breakdown of Arcane vs non-Arcane Champions in Top Team Compositions", y = "Count")
+```
+
 ## Conclusion
+
+With the popularity of Arcane, I would expect Arcane champions to be highly present in top team compositions.  From the champion data analysis, it does appear that the game developers are pushing Arcane champions given their prevalence in the higher cost tiers.  Furthermore, a popular strategy for TFT is 1-cost rerolls, which explains the high distribution of Arcane champions in the 1-cost tier as well.  However, when looking at top compositions (i.e. the compositions that actually perform well in-game), we can see that Arcane champions are only proportionately represented in the data.  
+
+One important consideration in this analysis with the Mobalytics data is that the "6 cost champions" - a category completely comprised of Arcane champions - has not been released yet.  As such, the Mobalytics top team comps cannot include this category of data.  These champions are set to be released on December 11, 2024.  Data can be scraped again after the set is released, and the same analysis can be performed for future steps.
 
